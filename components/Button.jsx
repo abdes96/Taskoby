@@ -37,10 +37,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderColor: COLORS.primary,
     borderWidth: 2,
-    borderRadius: 12,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    fontFamily: "Roboto",
+    fontFamily: "Poppins",
+    fontWeight: "bold",
   },
 });
 export default Button;

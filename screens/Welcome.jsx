@@ -86,23 +86,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 50,
     fontWeight: "800",
-    color: COLORS.white,
     marginBottom: 10,
-    fontFamily: "Roboto",
+    fontFamily: "Poppins",
   },
   description: {
     marginVertical: 22,
   },
   descriptionText: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.black,
     marginVertical: 4,
-    fontFamily: "Roboto",
+    fontFamily: "Poppins",
+    fontWeight: "bold",
   },
   button: {
     marginTop: 22,
     width: "100%",
-    fontFamily: "Roboto",
+    fontFamily: "Poppins",
   },
   loginContainer: {
     flexDirection: "row",
@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
   loginText: {
     fontSize: 16,
     color: COLORS.white,
-    fontFamily: "Roboto",
+    fontFamily: "Poppins",
   },
   loginLink: {
     fontWeight: "bold",
     marginLeft: 4,
-    fontFamily: "Roboto",
+    fontFamily: "Poppins",
   },
   image1: {
     height: 100,
