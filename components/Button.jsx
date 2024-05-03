@@ -4,16 +4,16 @@ import React from "react";
 const COLORS = {
   white: "#FFFFFF",
   black: "#222222",
-  primary: "#007260",
-  secondary: "#0000",
+  primary: "#62D2C3",
+  secondary: "#62D2C3",
   grey: "#CCCCCC",
 };
 
 const Button = (props) => {
   const filledBgColor = props.color || COLORS.primary;
   const outlinedColor = COLORS.white;
-  const bgColor = props.filled ? filledBgColor : outlinedColor;
-  const textColor = props.filled ? COLORS.white : COLORS.primary;
+  const bgColor = props.bgColor || props.filled ? filledBgColor : outlinedColor;
+  const textColor = props.filled ? COLORS.white : COLORS.black;
 
   return (
     <TouchableOpacity
@@ -24,7 +24,7 @@ const Button = (props) => {
       }}
       onPress={props.onPress}
     >
-      <Text style={{ fontSize: 18, ...{ color: textColor } }}>
+      <Text style={{ ...styles.text, fontSize: 20, ...{ color: textColor } }}>
         {props.title}
       </Text>
     </TouchableOpacity>
@@ -35,11 +35,14 @@ const styles = StyleSheet.create({
   button: {
     paddingBottom: 16,
     paddingVertical: 10,
-    borderColor: COLORS.primary,
-    borderWidth: 2,
-    borderRadius: 20,
+    borderColor: COLORS.white,
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
+  },
+  text: {
     fontFamily: "Poppins",
     fontWeight: "bold",
   },

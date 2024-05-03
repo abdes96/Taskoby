@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import Button from "../components/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Checkbox from "expo-checkbox";
 
 import {
   View,
@@ -9,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from "react-native";
 
 const COLORS = {
@@ -27,7 +29,9 @@ const Signup = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
-  const handleRegister = () => {};
+  const handleRegister = () => {
+    navigation.navigate("CreateFamilyScreen");
+  };
 
   return (
     <LinearGradient
@@ -36,6 +40,9 @@ const Signup = ({ navigation }) => {
       }}
       colors={[COLORS.grey, COLORS.primary]}
     >
+      <View>
+        <Image source={require("../assets/shape.png")} style={styles.image1} />
+      </View>
       <View style={{ marginTop: 80, marginHorizontal: 22 }}>
         <Text style={styles.title}>Create Account</Text>
 
@@ -44,6 +51,7 @@ const Signup = ({ navigation }) => {
             fontSize: 16,
             color: COLORS.black,
             fontFamily: "Poppins",
+            fontWeight: "bold",
           }}
         >
           Lets help your family in completing tasks !
@@ -77,6 +85,7 @@ const Signup = ({ navigation }) => {
             value={email}
             onChangeText={setEmail}
           />
+
           <Text style={styles.inputDescription}>Password</Text>
 
           <View>
@@ -107,10 +116,27 @@ const Signup = ({ navigation }) => {
             value={password}
             onChangeText={setPassword}
           />
+
+          <View
+            style={{
+              flexDirection: "row",
+              paddingBottom: 16,
+            }}
+          >
+            <Checkbox
+              style={{ marginRight: 8 }}
+              value={isChecked}
+              onValueChange={setIsChecked}
+              color={isChecked ? COLORS.primary : undefined}
+            />
+
+            <Text>I aggree to the terms and conditions</Text>
+          </View>
           <Button
             title="Register"
             onPress={handleRegister}
             style={styles.button}
+            bgColor="#62D2C3"
           />
 
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -132,6 +158,14 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     paddingHorizontal: 15,
   },
+  image1: {
+    width: 250,
+    height: 250,
+    position: "absolute",
+    top: -20,
+    right: 10,
+    transform: [{ translateX: 20 }, { translateY: 50 }, { rotate: "-90deg" }],
+  },
   title: {
     fontSize: 30,
     fontWeight: "bold",
@@ -139,6 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#000",
     marginVertical: 12,
+    textTransform: "uppercase",
   },
   subtitle: {
     fontSize: 24,

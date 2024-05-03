@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, Pressable, Image, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Button from "../components/Button";
-import Signup from "./Signup";
 
 const COLORS = {
   white: "#FFFFFF",
@@ -59,6 +58,7 @@ const Welcome = ({ navigation }) => {
             title="Join Now"
             onPress={() => navigation.navigate("Signup")}
             style={styles.button}
+            bgColor="#62D2C3"
           />
 
           <View style={styles.loginContainer}>
@@ -88,21 +88,23 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 10,
     fontFamily: "Poppins",
+    color: COLORS.white,
   },
   description: {
     marginVertical: 22,
   },
   descriptionText: {
-    fontSize: 16,
+    fontSize: 18,
     color: COLORS.black,
     marginVertical: 4,
     fontFamily: "Poppins",
     fontWeight: "bold",
   },
   button: {
-    marginTop: 22,
+    marginTop: 15,
     width: "100%",
     fontFamily: "Poppins",
+    color: COLORS.black,
   },
   loginContainer: {
     flexDirection: "row",
@@ -110,14 +112,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   loginText: {
-    fontSize: 16,
-    color: COLORS.white,
+    fontSize: 20,
+    color: COLORS.black,
+    marginTop: 5,
     fontFamily: "Poppins",
   },
   loginLink: {
     fontWeight: "bold",
     marginLeft: 4,
     fontFamily: "Poppins",
+    color: COLORS.white,
   },
   image1: {
     height: 100,

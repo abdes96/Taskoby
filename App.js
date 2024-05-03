@@ -5,13 +5,15 @@ import Welcome from "./screens/Welcome";
 import Signup from "./screens/Signup";
 import { StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
+import CreateFamilyScreen from "./screens/CreateFamilyScreen";
+import AddKidsScreen from "./screens/AddKidsScreen";
+import Home from "./screens/KidsScreens/Home";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [loaded] = useFonts({
     Poppins: require("./assets/fonts/Poppins-Regular.ttf"),
     PoppinsBold: require("./assets/fonts/Poppins-Bold.ttf"),
-
   });
 
   if (!loaded) {
@@ -31,6 +33,27 @@ export default function App() {
         <Stack.Screen
           name="Signup"
           component={Signup}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="CreateFamilyScreen"
+          component={CreateFamilyScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="AddKidsScreen"
+          component={AddKidsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+         <Stack.Screen
+          name="Home"
+          component={Home}
           options={{
             headerShown: false,
           }}
