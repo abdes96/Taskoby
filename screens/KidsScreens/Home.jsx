@@ -7,9 +7,13 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
+  Animated,
+  ScrollView,
 } from "react-native";
 import moment from "moment";
 import Swiper from "react-native-swiper";
+import Button from "../../components/Button";
+import TaskCard from "../../components/TaskCard";
 
 const { width } = Dimensions.get("window");
 
@@ -17,6 +21,8 @@ export default function Home() {
   const swiper = useRef();
   const [value, setValue] = useState(new Date());
   const [week, setWeek] = useState(0);
+  const [dailyTasks, setDailyTasks] = useState([]);
+  const [weeklyTasks, setWeeklyTasks] = useState([]);
 
   const weeks = React.useMemo(() => {
     const start = moment().add(week, "weeks").startOf("week");
@@ -33,11 +39,106 @@ export default function Home() {
     });
   }, [week]);
 
+  const handleTaskPress = (task, isDaily) => {
+    if (isDaily) {
+      setDailyTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === task.id ? { ...t, isDone: !t.isDone } : t
+        )
+      );
+      console.log("Daily Task Pressed");
+    } else {
+      setWeeklyTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === task.id ? { ...t, isDone: !t.isDone } : t
+        )
+      );
+      console.log("Weekly Task Pressed");
+
+    }
+  };
+
+  const renderTaskCards = () => {
+    // Sample task data
+    const dailyTasks = [
+      {
+        id: 1,
+        title: "Clean your room",
+        description: "Make your bed and organize toys.",
+        isDone: false,
+      },
+      {
+        id: 2,
+        title: "Do your homework",
+        description: "Complete your math and reading assignments.",
+        isDone: false,
+      },
+      {
+        id: 3,
+        title: "Help with dinner",
+        description: "Set the table and assist with cooking.",
+        isDone: false,
+      },
+    ];
+
+    const weeklyTasks = [
+      {
+        id: 1,
+        icon: "code",
+        label: "TypeScript",
+        company: "8 endorsements",
+        jobType: "2 experiences",
+        years: "GitHub & Figma",
+        isDone: false,
+      },
+      {
+        id: 2,
+        icon: "git-merge",
+        label: "Git",
+        company: "3 endorsements",
+        jobType: "1 experience",
+        years: "GitHub",
+        isDone: false,
+      },
+    ];
+
+    return (
+      <View style={styles.taskContainer}>
+        <View style={styles.taskSection}>
+          <Text style={styles.taskSectionTitle}>Daily Tasks</Text>
+          <ScrollView>
+            {dailyTasks.map((task) => (
+              <TouchableOpacity
+                key={task.id}
+                onPress={() => handleTaskPress(task, true)}
+              >
+                <TaskCard task={task} isDaily={true} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+        <View style={styles.taskSection}>
+          <Text style={styles.taskSectionTitle}>Weekly Tasks</Text>
+          <ScrollView horizontal>
+            {weeklyTasks.map((task) => (
+              <TouchableOpacity
+                key={task.id}
+                onPress={() => handleTaskPress(task, false)}
+              >
+                <TaskCard key={task.id} task={task} isDaily={false} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Schedule</Text>
+          <Text style={styles.title}>Calendar</Text>
         </View>
 
         <View style={styles.picker}>
@@ -76,15 +177,15 @@ export default function Home() {
                         style={[
                           styles.item,
                           isActive && {
-                            backgroundColor: "#111",
-                            borderColor: "#111",
+                            backgroundColor: "#62D2C3",
+                            borderColor: "#007260 ",
                           },
                         ]}
                       >
                         <Text
                           style={[
                             styles.itemWeekday,
-                            isActive && { color: "#fff" },
+                            isActive && { color: "#000" },
                           ]}
                         >
                           {item.weekday}
@@ -92,7 +193,7 @@ export default function Home() {
                         <Text
                           style={[
                             styles.itemDate,
-                            isActive && { color: "#fff" },
+                            isActive && { color: "#000" },
                           ]}
                         >
                           {item.date.getDate()}
@@ -107,22 +208,22 @@ export default function Home() {
         </View>
 
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
-          <Text style={styles.subtitle}>{value.toDateString()}</Text>
-          <View style={styles.placeholder}>
-            <View style={styles.placeholderInset}>
-            </View>
+          <View>
+            <Text style={styles.title}>Chores</Text>
           </View>
+          <Text style={styles.subtitle}>{value.toDateString()}</Text>
+          <ScrollView style={styles.placeholder}>
+            <View style={styles.placeholderInset}>{renderTaskCards()}</View>
+          </ScrollView>
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity
-            onPress={() => {
-            }}
-          >
-            <View style={styles.btn}>
-              <Text style={styles.btnText}>Schedule</Text>
-            </View>
-          </TouchableOpacity>
+          {/* <Button
+            title="Create Family"
+            onPress={""}
+            style={styles.button}
+            bgColor="#62D2C3"
+          /> */}
         </View>
       </View>
     </SafeAreaView>
@@ -134,6 +235,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 24,
     marginVertical: 30,
+    backgroundColor: "#EEEEEE",
+    fontFamily: "Poppins",
+  },
+  taskContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  taskSection: {
+    marginBottom: 16,
+    maxHeight: "100%",
+  },
+  taskSectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
   header: {
     paddingHorizontal: 16,
@@ -143,17 +259,18 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#1d1d1d",
     marginBottom: 12,
+    fontFamily: "Poppins",
   },
   picker: {
     flex: 1,
-    maxHeight: 74,
-    paddingVertical: 12,
+    maxHeight: 100,
+    paddingVertical: 0,
     flexDirection: "row",
     alignItems: "center",
   },
   subtitle: {
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#999999",
     marginBottom: 12,
   },
@@ -164,13 +281,13 @@ const styles = StyleSheet.create({
   /** Item */
   item: {
     flex: 1,
-    height: 50,
+    height: 100,
     marginHorizontal: 4,
-    paddingVertical: 6,
+    paddingVertical: 25,
     paddingHorizontal: 4,
     borderWidth: 1,
-    borderRadius: 8,
-    borderColor: "#e3e3e3",
+    borderRadius: 15,
+    borderColor: "#007260",
     flexDirection: "column",
     alignItems: "center",
   },
@@ -203,30 +320,13 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   placeholderInset: {
-    borderWidth: 4,
-    borderColor: "#e5e7eb",
+    borderWidth: 2,
+    borderColor: "#007260",
     borderStyle: "dashed",
     borderRadius: 9,
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
-  },
-  /** Button */
-  btn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    backgroundColor: "#007aff",
-    borderColor: "#007aff",
-  },
-  btnText: {
-    fontSize: 18,
-    lineHeight: 26,
-    fontWeight: "600",
-    color: "#fff",
+    padding: 10,
   },
 });
