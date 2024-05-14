@@ -40,21 +40,18 @@ export default function Home() {
   }, [week]);
 
   const handleTaskPress = (task, isDaily) => {
-    if (isDaily) {
-      setDailyTasks((prevTasks) =>
-        prevTasks.map((t) =>
+    const updatedTasks = isDaily
+      ? dailyTasks.map((t) =>
           t.id === task.id ? { ...t, isDone: !t.isDone } : t
         )
-      );
-      console.log("Daily Task Pressed");
-    } else {
-      setWeeklyTasks((prevTasks) =>
-        prevTasks.map((t) =>
+      : weeklyTasks.map((t) =>
           t.id === task.id ? { ...t, isDone: !t.isDone } : t
-        )
-      );
-      console.log("Weekly Task Pressed");
+        );
 
+    if (isDaily) {
+      setDailyTasks(updatedTasks);
+    } else {
+      setWeeklyTasks(updatedTasks);
     }
   };
 
