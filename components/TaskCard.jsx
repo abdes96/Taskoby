@@ -127,7 +127,8 @@ const styles = StyleSheet.create({
   },
 
   Daycard: {
-    width: 300,
+    width: 350,
+    display: "flex",
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginTop: 8,

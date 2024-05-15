@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -12,51 +12,30 @@ import {
 } from "react-native";
 import moment from "moment";
 import Swiper from "react-native-swiper";
-import Button from "../../components/Button";
 import TaskCard from "../../components/TaskCard";
+import Button from "../../components/Button";
 
 const { width } = Dimensions.get("window");
 
+const COLORS = {
+  white: "#FFFFFF",
+  black: "#222222",
+  primary: "#007260",
+  secondary: "#0000",
+  grey: "#EEEEEE",
+};
+
 export default function Home() {
   const swiper = useRef();
-  const [value, setValue] = useState(new Date());
-  const [week, setWeek] = useState(0);
   const [dailyTasks, setDailyTasks] = useState([]);
   const [weeklyTasks, setWeeklyTasks] = useState([]);
+  const [value, setValue] = useState(new Date());
+  const [valueWeekly, setValueWeekly] = useState(
+    moment().startOf("week").toDate()
+  );
 
-  const weeks = React.useMemo(() => {
-    const start = moment().add(week, "weeks").startOf("week");
-
-    return [-1, 0, 1].map((adj) => {
-      return Array.from({ length: 7 }).map((_, index) => {
-        const date = moment(start).add(adj, "week").add(index, "day");
-
-        return {
-          weekday: date.format("ddd"),
-          date: date.toDate(),
-        };
-      });
-    });
-  }, [week]);
-
-  const handleTaskPress = (task, isDaily) => {
-    const updatedTasks = isDaily
-      ? dailyTasks.map((t) =>
-          t.id === task.id ? { ...t, isDone: !t.isDone } : t
-        )
-      : weeklyTasks.map((t) =>
-          t.id === task.id ? { ...t, isDone: !t.isDone } : t
-        );
-
-    if (isDaily) {
-      setDailyTasks(updatedTasks);
-    } else {
-      setWeeklyTasks(updatedTasks);
-    }
-  };
-
-  const renderTaskCards = () => {
-    // Sample task data
+  const [week, setWeek] = useState(0);
+  useEffect(() => {
     const dailyTasks = [
       {
         id: 1,
@@ -99,30 +78,73 @@ export default function Home() {
       },
     ];
 
+    setDailyTasks(dailyTasks);
+    setWeeklyTasks(weeklyTasks);
+  }, []);
+
+  const weeks = React.useMemo(() => {
+    const start = moment().add(week, "weeks").startOf("week");
+
+    return [-1, 0, 1].map((adj) => {
+      return Array.from({ length: 7 }).map((_, index) => {
+        const date = moment(start).add(adj, "week").add(index, "day");
+
+        return {
+          weekday: date.format("ddd"),
+          date: date.toDate(),
+        };
+      });
+    });
+  }, [week]);
+
+  const handleTaskPress = (taskId) => {
+    setDailyTasks((prevTasks) => {
+      return prevTasks.map((task) => {
+        if (task.id === taskId) {
+          console.log("Task with matching id found:", task.isDone);
+          return { ...task, isDone: !task.isDone };
+        }
+        return task;
+      });
+    });
+  };
+
+  const renderTaskCards = () => {
     return (
       <View style={styles.taskContainer}>
         <View style={styles.taskSection}>
-          <Text style={styles.taskSectionTitle}>Daily Tasks</Text>
-          <ScrollView>
+          <View style={styles.header}>
+            <Text style={styles.taskSectionTitle}>Daily Tasks</Text>
+            <Text style={styles.subtitle}>{value.toDateString()}</Text>
+          </View>
+          <View>
             {dailyTasks.map((task) => (
               <TouchableOpacity
                 key={task.id}
-                onPress={() => handleTaskPress(task, true)}
+                onPress={() => handleTaskPress(task.id)}
               >
-                <TaskCard task={task} isDaily={true} />
+                <TaskCard task={task} isDaily={true} isDone={task.isDone} />
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
         <View style={styles.taskSection}>
           <Text style={styles.taskSectionTitle}>Weekly Tasks</Text>
-          <ScrollView horizontal>
+          <Text style={styles.subtitle}>
+            Week of {startOfWeek} - {endOfWeek}
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {weeklyTasks.map((task) => (
               <TouchableOpacity
                 key={task.id}
                 onPress={() => handleTaskPress(task, false)}
               >
-                <TaskCard key={task.id} task={task} isDaily={false} />
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  isDaily={false}
+                  isDone={task.isDone}
+                />
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -131,11 +153,16 @@ export default function Home() {
     );
   };
 
+  const startOfWeek = moment(valueWeekly)
+    .startOf("week")
+    .format("MMMM Do YYYY");
+  const endOfWeek = moment(valueWeekly).endOf("week").format("MMMM Do YYYY");
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Calendar</Text>
+          {/* <Text style={styles.title}>Calendar</Text> */}
         </View>
 
         <View style={styles.picker}>
@@ -203,27 +230,46 @@ export default function Home() {
             ))}
           </Swiper>
         </View>
+        <ScrollView
+          horizontal
+          style={styles.buttonscroll}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity>
+              <Button
+                title="All"
+                onPress={""}
+                style={styles.button}
+                bgColor="#62D2C3"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Button
+                title="To Do"
+                onPress={""}
+                style={styles.button}
+                bgColor="#62D2C3"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Button
+                title="Done"
+                onPress={""}
+                style={styles.button}
+                bgColor="#62D2C3"
+              />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
 
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
-          <View>
-            <Text style={styles.title}>Chores</Text>
-          </View>
-          <Text style={styles.subtitle}>{value.toDateString()}</Text>
-          <ScrollView style={styles.placeholder}>
+          <View style={styles.placeholder}>
             <View style={styles.placeholderInset}>{renderTaskCards()}</View>
-          </ScrollView>
-        </View>
-
-        <View style={styles.footer}>
-          {/* <Button
-            title="Create Family"
-            onPress={""}
-            style={styles.button}
-            bgColor="#62D2C3"
-          /> */}
+          </View>
         </View>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
@@ -235,13 +281,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEEEEE",
     fontFamily: "Poppins",
   },
-  taskContainer: {
-    flex: 1,
+  buttonscroll: {
+    marginTop: 10,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
     paddingHorizontal: 16,
+  },
+  button: {
+    marginHorizontal: 10,
+    paddingVertical: 5,
+    marginTop: 10,
+    width: 200,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#62D2C3",
+    backgroundColor: "#62D2C3",
+  },
+
+  taskContainer: {
+    paddingHorizontal: 8,
   },
   taskSection: {
     marginBottom: 16,
     maxHeight: "100%",
+    justifyContent: "center",
   },
   taskSectionTitle: {
     fontSize: 20,
@@ -311,19 +377,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
-    height: 400,
     marginTop: 0,
     padding: 0,
-    backgroundColor: "transparent",
-  },
-  placeholderInset: {
-    borderWidth: 2,
-    borderColor: "#007260",
-    borderStyle: "dashed",
-    borderRadius: 9,
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    padding: 10,
   },
 });
