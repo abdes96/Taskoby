@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
@@ -19,8 +12,15 @@ const TaskCard = ({ task, isDaily, isDone }) => {
         <View style={styles.Daycard}>
           <View style={styles.daily}>
             <Text style={styles.title}>{task.title}</Text>
-            <Text style={styles.description}>{task.description}</Text>
-            {isDone && <AntDesign name="checksquare" size={24} color="black" />}
+            <View style={styles.top}>
+              <Text style={styles.description}>{task.description}</Text>
+
+              {isDone ? (
+                <AntDesign name="checksquare" size={30} color="#62d2c3" />
+              ) : (
+                <AntDesign name="checksquare" size={30} color="#eeeeee" />
+              )}
+            </View>
             <View style={styles.listHeader}>
               <Text style={styles.listAction}>View All</Text>
               <View style={styles.icons}>
@@ -70,12 +70,18 @@ const TaskCard = ({ task, isDaily, isDone }) => {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
   },
+  top: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
   description: {
     fontSize: 14,
+    width: "80%",
   },
   daily: {
     marginVertical: 0,

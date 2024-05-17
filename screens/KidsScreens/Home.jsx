@@ -7,13 +7,14 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
-  Animated,
   ScrollView,
 } from "react-native";
 import moment from "moment";
 import Swiper from "react-native-swiper";
 import TaskCard from "../../components/TaskCard";
 import Button from "../../components/Button";
+import TaskModal from "../../components/TaskModal";
+import { BlurView } from "expo-blur";
 
 const { width } = Dimensions.get("window");
 
@@ -35,6 +36,8 @@ export default function Home() {
   );
 
   const [week, setWeek] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   useEffect(() => {
     const dailyTasks = [
       {
@@ -60,6 +63,7 @@ export default function Home() {
     const weeklyTasks = [
       {
         id: 1,
+
         icon: "code",
         label: "TypeScript",
         company: "8 endorsements",
@@ -97,16 +101,30 @@ export default function Home() {
     });
   }, [week]);
 
-  const handleTaskPress = (taskId) => {
-    setDailyTasks((prevTasks) => {
-      return prevTasks.map((task) => {
-        if (task.id === taskId) {
-          console.log("Task with matching id found:", task.isDone);
-          return { ...task, isDone: !task.isDone };
-        }
-        return task;
-      });
-    });
+  const [taskToUpdate, setTaskToUpdate] = useState(null);
+
+  const handleTaskPress = (taskId, isDaily) => {
+    const tasks = isDaily ? dailyTasks : weeklyTasks;
+    const taskToUpdate = tasks.find((task) => task.id === taskId);
+
+    if (taskToUpdate) {
+      setTaskToUpdate(taskToUpdate);
+      setIsModalVisible(true);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleMarkAsDone = () => {
+    console.log("Mark as done", taskToUpdate);
+    setDailyTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskToUpdate.id ? { ...task, isDone: true } : task
+      )
+    );
+    setIsModalVisible(false);
   };
 
   const renderTaskCards = () => {
@@ -121,7 +139,7 @@ export default function Home() {
             {dailyTasks.map((task) => (
               <TouchableOpacity
                 key={task.id}
-                onPress={() => handleTaskPress(task.id)}
+                onPress={() => handleTaskPress(task.id, true)}
               >
                 <TaskCard task={task} isDaily={true} isDone={task.isDone} />
               </TouchableOpacity>
@@ -137,7 +155,7 @@ export default function Home() {
             {weeklyTasks.map((task) => (
               <TouchableOpacity
                 key={task.id}
-                onPress={() => handleTaskPress(task, false)}
+                onPress={() => handleTaskPress(task.id, false)}
               >
                 <TaskCard
                   key={task.id}
@@ -230,45 +248,53 @@ export default function Home() {
             ))}
           </Swiper>
         </View>
-        <ScrollView
-          horizontal
-          style={styles.buttonscroll}
-          showsHorizontalScrollIndicator={false}
-        >
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity>
-              <Button
-                title="All"
-                onPress={""}
-                style={styles.button}
-                bgColor="#62D2C3"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Button
-                title="To Do"
-                onPress={""}
-                style={styles.button}
-                bgColor="#62D2C3"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Button
-                title="Done"
-                onPress={""}
-                style={styles.button}
-                bgColor="#62D2C3"
-              />
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
 
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
           <View style={styles.placeholder}>
+            <ScrollView
+              horizontal
+              style={styles.buttonscroll}
+              showsHorizontalScrollIndicator={false}
+            >
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity>
+                  <Button
+                    title="All"
+                    onPress={""}
+                    style={styles.button}
+                    bgColor="#62D2C3"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Button
+                    title="To Do"
+                    onPress={""}
+                    style={styles.button}
+                    bgColor="#62D2C3"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Button
+                    title="Done"
+                    onPress={""}
+                    style={styles.button}
+                    bgColor="#62D2C3"
+                  />
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
             <View style={styles.placeholderInset}>{renderTaskCards()}</View>
           </View>
         </View>
       </View>
+      <BlurView intensity={100} style={styles.absolute} tint="light" />
+
+      <TaskModal
+        task={taskToUpdate}
+        isVisible={isModalVisible}
+        onClose={handleModalClose}
+        onDone={handleMarkAsDone}
+      />
     </ScrollView>
   );
 }
@@ -281,8 +307,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEEEEE",
     fontFamily: "Poppins",
   },
+
   buttonscroll: {
     marginTop: 10,
+    position: "absolute",
+    right: -16,
+    left: -16,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -292,17 +322,18 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 10,
-    paddingVertical: 5,
-    marginTop: 10,
-    width: 200,
+    paddingVertical: 10,
+    width: 150,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#62D2C3",
     backgroundColor: "#62D2C3",
+    alignItems: "center",
   },
 
   taskContainer: {
     paddingHorizontal: 8,
+    paddingVertical: 100,
   },
   taskSection: {
     marginBottom: 16,
@@ -330,6 +361,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   subtitle: {
     fontSize: 17,
@@ -359,7 +391,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    marginHorizontal: -4,
   },
   itemWeekday: {
     fontSize: 13,
