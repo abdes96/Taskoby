@@ -2,10 +2,33 @@ import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
 import { AntDesign } from "@expo/vector-icons";
-import Button from "./Button";
-import { Ionicons } from "@expo/vector-icons";
+import Button from "../../../components/Button";
+import { Ionicons, Feather } from "@expo/vector-icons";
+import * as ImagePicker from 'expo-image-picker';
+
 
 const TaskModal = ({ task, isVisible, onClose, onDone }) => {
+
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera permissions to make this work!');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+    
+  };
+
   if (!task) {
     return null;
   }
@@ -44,10 +67,14 @@ const TaskModal = ({ task, isVisible, onClose, onDone }) => {
               />
             </View>
           </View>
-
-          <TouchableOpacity>
-            <Button
-              title={
+            <View style={styles.buttons}>
+              <TouchableOpacity onPress={handleTakePhoto} style={styles.proofBtn}>
+                <View style={styles.button}>
+                  <Text style={styles.proof}>Picture proof </Text>
+                  <Feather name="camera" size={24} color="black" />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={onDone} style={styles.button}>
                 <View style={styles.button}>
                   <Text style={styles.mark}>Mark as Done </Text>
                   <Ionicons
@@ -60,12 +87,10 @@ const TaskModal = ({ task, isVisible, onClose, onDone }) => {
                     color="black"
                   />
                 </View>
-              }
-              onPress={onDone}
-              style={styles.button}
-              bgColor="#62D2C3"
-            />
-          </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
+
+          
         </View>
       </View>
     </Modal>
@@ -86,19 +111,36 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-  buttonMessage: {
-    width: "70%",
-    marginBottom: 8,
-  },
-  button: {
-    flexDirection: "row",
+  proofBtn: {
+    backgroundColor: "#62D2C3",
+    padding: 5,
+    borderRadius: 5,
     alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 10,
+  },
+  proof: {
+    fontSize: 18,
   },
   mark: {
+    color: "black",
     fontSize: 20,
     fontWeight: "bold",
   },
+  button: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#62D2C3",
+    padding: 8,
+    borderRadius: 5,
+
+  },
+  buttons: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    height: "25%",
+  },
+
   closeBtn: {
     position: "absolute",
     top: -20,

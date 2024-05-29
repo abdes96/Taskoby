@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import Button from "../components/Button";
+import Button from "../../components/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Checkbox from "expo-checkbox";
 
@@ -33,15 +33,21 @@ const Signup = ({ navigation }) => {
     navigation.navigate("CreateFamilyScreen");
   };
 
+  const [isFocused, setIsFocused] = useState(false);
+
+
   return (
     <LinearGradient
       style={{
         flex: 1,
       }}
-      colors={[COLORS.grey, COLORS.primary]}
+      colors={[COLORS.grey, COLORS.grey]}
     >
       <View>
-        <Image source={require("../assets/shape.png")} style={styles.image1} />
+        <Image
+          source={require("../../assets/shape.png")}
+          style={styles.image1}
+        />
       </View>
       <View style={{ marginTop: 80, marginHorizontal: 22 }}>
         <Text style={styles.title}>Create Account</Text>
@@ -64,7 +70,9 @@ const Signup = ({ navigation }) => {
 
           <Text style={styles.inputDescription}>Firstname</Text>
           <TextInput
-            style={styles.input}
+               style={isFocused ? styles.inputActive : styles.input}
+               onFocus={() => setIsFocused(true)}
+               onBlur={() => setIsFocused(false)}
             placeholder="Firstname"
             value={firstname}
             onChangeText={setFirstname}
@@ -188,7 +196,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderWidth: 1,
     borderColor: "#ffff",
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 10,
     backgroundColor: "#fff",
     marginBottom: 15,

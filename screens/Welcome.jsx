@@ -94,11 +94,10 @@ const styles = StyleSheet.create({
     marginVertical: 22,
   },
   descriptionText: {
-    fontSize: 18,
-    color: COLORS.black,
+    fontSize: 16,
+    color: COLORS.white,
     marginVertical: 4,
     fontFamily: "Poppins",
-    fontWeight: "bold",
   },
   button: {
     marginTop: 15,

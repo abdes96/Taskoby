@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import moment from "moment";
 import Swiper from "react-native-swiper";
-import TaskCard from "../../components/TaskCard";
+import TaskCard from "./components/TaskCard";
 import Button from "../../components/Button";
-import TaskModal from "../../components/TaskModal";
+import TaskModal from "./components/TaskModal";
 import { BlurView } from "expo-blur";
 
 const { width } = Dimensions.get("window");
