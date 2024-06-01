@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,9 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 const familyData = [
   {
@@ -14,7 +17,8 @@ const familyData = [
     name: "Jessica",
     image: require("../../assets/jes.png"),
     tasks: 30,
-    color: "#FFE3AD",
+    color: "#EE6A7D",
+    color2: "#FFD700",
   },
   {
     id: "2",
@@ -22,6 +26,7 @@ const familyData = [
     image: require("../../assets/john.png"),
     tasks: 28,
     color: "#FFC098",
+    color2: "#FFC098",
   },
   {
     id: "3",
@@ -29,6 +34,7 @@ const familyData = [
     image: require("../../assets/dad.png"),
     tasks: 20,
     color: "#B0D9DC",
+    color2: "#B0D9DC",
   },
   {
     id: "4",
@@ -36,20 +42,47 @@ const familyData = [
     image: require("../../assets/mom.png"),
     tasks: 15,
     color: "#F9C3BE",
+    color2: "#CA9DDA",
   },
 ];
 
 const Homekid = () => {
+
+  // To set data
+const storeData = async (value) => {
+  try {
+    const jsonValue = JSON.stringify(value)
+    await AsyncStorage.setItem('@family_data', jsonValue)
+    const storedValue = await AsyncStorage.getItem('@family_data');
+    console.log(storedValue);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+
+  useEffect(() => {
+    storeData(familyData);
+  }, []);
+  
+
   const renderFamilyMember = ({ item }) => (
     <View style={styles.member}>
       <View style={styles.rankContainer}>
-        <Text style={[styles.rankText, item.id === "1" ? { color: "#FFD700" } : {}]}>
+        <Text
+          style={[styles.rankText, item.id === "1" ? { color: "#FFD700" } : {}]}
+        >
           {item.id}
         </Text>
         <Text style={styles.memberName}>{item.name}</Text>
       </View>
-      <View style={[styles.memberContainer, { backgroundColor: item.color }]}>
-      {item.id === "1" && <Image source={require("../../assets/first.png")} style={styles.extraImage} />}
+      <View style={[styles.memberContainer, { backgroundColor: item.color2 }]}>
+        {item.id === "1" && (
+          <Image
+            source={require("../../assets/first.png")}
+            style={styles.extraImage}
+          />
+        )}
         <Image source={item.image} style={styles.memberImage} />
         <View style={styles.detailsContainer}>
           <View style={styles.Record}>
@@ -72,8 +105,17 @@ const Homekid = () => {
       <SafeAreaView>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Text style={styles.headerText}>HOME HARMONY</Text>
-            <View style={styles.headerContainer}>
+            <Text style={styles.headerTextFamily}>
+              <Text style={{ fontWeight: "bold" }}>Glazzers</Text> Family
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.headerContainer,
+                { marginLeft: -20, marginRight: -20 },
+              ]}
+            >
               {familyData.map((member) => (
                 <View key={member.id} style={styles.profileContainer}>
                   <View
@@ -87,9 +129,9 @@ const Homekid = () => {
                   <Text style={styles.profileName}>{member.name}</Text>
                 </View>
               ))}
-            </View>
+            </ScrollView>
           </View>
-          <View>
+          <View style={styles.important}>
             <Text style={styles.headerText}>Important!</Text>
             <View style={styles.noticeContainer}>
               <Text style={styles.noticeText}>Movie night is today!</Text>
@@ -112,8 +154,8 @@ const Homekid = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#FFFFFF",
+    marginVertical: 10,
   },
   classement: {
     flex: 1,
@@ -122,24 +164,37 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 1,
     marginBottom: 100,
+    marginLeft: 20,
+    marginRight: 20,
     alignItems: "center",
     zIndex: -999,
   },
   headerText: {
     fontSize: 24,
-    fontWeight: "bold",
     textAlign: "left",
+    paddingBottom: 5,
+    fontWeight: "bold",
+  },
+  
+  headerTextFamily: {
+    fontSize: 24,
+    textAlign: "left",
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   header: {
     marginTop: 50,
   },
   headerContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 20,
+    paddingHorizontal: 50,
+  },
+  important: {
+    padding: 20,
   },
   profileContainer: {
     alignItems: "center",
+    margin: 10,
   },
   extraImage: {
     height: 90,
@@ -150,20 +205,27 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 70,
+    height: 75,
   },
   circleBackground: {
-    width: 80,
-    height: 80,
+    width: 85,
+    height: 85,
     borderRadius: 100,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#030002",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
   },
   profileName: {
     marginTop: 5,
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "bold",
   },
   sectionTitle: {
@@ -175,14 +237,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
   },
   noticeContainer: {
-    backgroundColor: "#FFD700",
+    backgroundColor: "#FFDA9E",
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
     justifyContent: "center",
+    shadowColor: "#030002",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
   },
   noticeText: {
-    fontSize: 16,
+    fontSize: 18,
+    textAlign: "center",
   },
   memberContainer: {
     display: "flex",
@@ -193,14 +264,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "black",
     alignItems: "center",
-    shadowColor: "black",
+    shadowColor: "#030002",
     shadowOffset: {
-      width: 0,
-      height: 10,
+      width: 6,
+      height: 6,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10, // for Android
+    shadowRadius: 5,
+    elevation: 5,
   },
   Record: {
     paddingRight: 10,
@@ -227,8 +298,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   memberImage: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 75,
   },
   detailsContainer: {
     marginLeft: 10,

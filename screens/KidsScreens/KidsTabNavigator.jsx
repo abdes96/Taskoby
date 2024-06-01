@@ -4,7 +4,8 @@ import { Entypo } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import ProfileTab from "./Profile";
 import Homekid from "./HomeKid";
-import { Platform , View ,  StyleSheet} from "react-native";
+import { Platform, View, StyleSheet } from "react-native";
+import Tasks from "./Tasks";
 
 const Tab = createBottomTabNavigator();
 
@@ -39,13 +40,17 @@ function KidsTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Home"
-        component={Homekid}
+        name="Tasks"
+        component={Tasks}
         options={{
           tabBarIcon: ({ color, focused, size }) => {
             return (
               <View style={focused ? styles.activeIcon : null}>
-              <FontAwesome name="sticky-note" size={focused ? 40 : 30}  color={color} />
+                <FontAwesome
+                  name="sticky-note"
+                  size={focused ? 40 : 30}
+                  color={color}
+                />
               </View>
             );
           },
@@ -78,6 +83,6 @@ const styles = StyleSheet.create({
   activeIcon: {
     padding: 5,
     borderTopWidth: 3,
-    borderTopColor: '#BEACFF',
+    borderTopColor: "#BEACFF",
   },
 });

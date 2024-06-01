@@ -5,7 +5,7 @@ import Welcome from "../screens/Welcome";
 import Signup from "../screens/ParentScreens/Signup";
 import CreateFamilyScreen from "../screens/ParentScreens/CreateFamilyScreen";
 import AddKidsScreen from "../screens/ParentScreens/AddKidsScreen";
-import Index from "../screens/KidsScreens/Index";
+import Index from "../screens/KidsScreens/Tasks";
 import Home from "../screens/KidsScreens/Home";
 import ChooseProfile from "../screens/ChooseProfile";
 import HomeKid from "../screens/KidsScreens/HomeKid";
@@ -13,7 +13,7 @@ import KidsTabNavigator from "../screens/KidsScreens/KidsTabNavigator";
 
 const Stack = createStackNavigator();
 
-const Navigation = () => {
+const Navigation = (navigation) => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="ChoseProfileScreen">
