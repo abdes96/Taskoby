@@ -1,125 +1,312 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  Dimensions,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ProfileTab = () => {
-  // Mock data for coins, today's task completion, and available awards
-  const coins = 50;
-  const tasksCompleted = 3;
-  const totalTasks = 5;
-  const completionPercentage = (tasksCompleted / totalTasks) * 100;
-  const awards = [
-    { name: 'Attraction Park', cost: 20, image: require('../../assets/attraction_park.jpg') },
-    { name: 'Cinema', cost: 30, image: require('../../assets/cinema.jpg') },
-    { name: 'Ice Cream', cost: 10, image: require('../../assets/ice_cream.jpg') },
-  ];
+const ProfileScreen = () => {
+  const [userData, setUserData] = useState({
+    name: "Jessica",
+    totalTasks: 30,
+    cleaningTasks: 10,
+    studyTasks: 10,
+    yearlyTasks: 603,
+    image: require("../../assets/jes.png"),
+  });
+
+  const [data, setData] = useState([
+    {
+      category: "cleaning",
+      count: userData.cleaningTasks,
+      image: require("../../assets/spong.png"),
+    },
+    {
+      category: "study",
+      count: userData.studyTasks,
+      image: require("../../assets/study.png"),
+    },
+  ]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.profileContainer}>
-        <Image source={require('../../assets/hero1.jpg')} style={styles.avatar} />
-        <View style={styles.profileInfo}>
-          <Text style={styles.username}>JohnDoe123</Text>
-          <Text style={styles.level}>Level 5</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.bgCircle}></View>
+          <View style={styles.profile}>
+            <View style={styles.name}>
+              <Text style={styles.familyName}>Glazers</Text>
+              <Text style={styles.profileName}>{userData.name}</Text>
+            </View>
+            <Image source={userData.image} style={styles.profileImage} />
+          </View>
         </View>
-        <TouchableOpacity style={styles.editIcon}>
-          <Icon name="pencil" size={30} color="gray" />
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.statsContainer}>
-        <Text style={styles.statsText}>Coins: {coins}</Text>
-        
-        <Text style={styles.statsText}>Today's Tasks: {tasksCompleted}/{totalTasks}</Text>
-        <Text style={styles.statsText}>Rank: 5th</Text>
-      </View>
+        <View style={styles.section}>
+          <View style={styles.tasksContainer}>
+            <View style={styles.taskmonth}>
+              <Text style={styles.sectionTitle1}>Tasks completed</Text>
+              <Text style={styles.tasksCount}>{userData.totalTasks}</Text>
+              <Text style={styles.sectionSubtitle}>This month</Text>
+            </View>
+            <Image
+              source={require("../../assets/tasksImage.png")}
+              style={styles.tasksImage}
+            />
+          </View>
+        </View>
 
-      <View style={styles.awardsContainer}>
-        <Text style={styles.sectionTitle}>Available Awards</Text>
-        {awards.map((award, index) => (
-          <View key={index} style={styles.awardItem}>
-            <Image source={award.image} style={styles.awardImage} />
+        <View style={styles.section1}>
+          <Text style={styles.sectionTitle2}>Tasks</Text>
+          <View style={styles.tasksBreakdown}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.headerContainer,
+                { marginLeft: 0 },
+              ]}
+            >
+              {data.map((item, index) => (
+                <View key={index} style={styles.taskBox}>
+                  <Image source={item.image} style={styles.taskImage1} />
+                  <Text style={styles.category}>{item.category}</Text>
+                  <View style={styles.counter}>
+                    <Text style={styles.taskCount}>{item.count}</Text>
+                    <Text style={styles.taskLabel}> completed</Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>This year</Text>
+          <View style={styles.yearlyTasksContainer}>
+            <View style={styles.yearlyTasksContent}>
+              <Text style={styles.sectionTitle1}>Tasks completed</Text>
+
+              <Text style={styles.yearlyTasksSubtitle}>
+                103 more than last year!
+              </Text>
+              <Text style={styles.tasksCount}>{userData.yearlyTasks}</Text>
+              <Text style={styles.sectionSubtitle}>this year</Text>
+            </View>
             <View>
-              <Text>{award.name}</Text>
-              <Text>{award.cost} Coins</Text>
+              <Image
+                style={styles.yearlyImg}
+                source={require("../../assets/yearlyTasks.png")}
+              />
             </View>
           </View>
-        ))}
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFFFFF",
+    fontFamily: "Poppins",
   },
-  profileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  bgCircle: {
+    position: "absolute",
+    height: Dimensions.get("window").width + 150,
+    width: Dimensions.get("window").width + 150,
+    backgroundColor: "#EE6A7D",
+    borderRadius: 999,
+    zIndex: -999,
+    top: -300,
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
+  header: {
+    alignItems: "center",
+    padding: 20,
   },
-  profileInfo: {
-    flexDirection: 'column',
+  profile: {
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    width: "100%",
+    padding: 20,
+    paddingTop: 60,
   },
-  username: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  name: {
+    flexDirection: "column",
+    alignItems: "flex-start",
   },
-  level: {
-    fontSize: 14,
-    color: 'gray',
+  profileImage: {
+    width: 110,
+    height: 120,
+    borderRadius: 40,
+    marginBottom: 10,
   },
-  editIcon: {
-    marginLeft: 'auto',
+  familyName: {
+    fontSize: 24,
+    color: "white",
+    textAlign: "left",
+    marginLeft: 5,
+    
   },
-  statsContainer: {
-    marginTop: 20,
-    alignItems: 'center',
+  profileName: {
+    fontSize: 48,
+    fontWeight: "bold",
+    fontFamily: "Poppins",
+    color: "white",
+    textAlign: "left",
   },
-  statsText: {
-    fontSize: 16,
-    marginBottom: 5,
+  section: {
+    marginBottom: 20,
+    padding: 20,
   },
-  progressBar: {
-    width: '80%',
-    height: 10,
-    backgroundColor: '#ddd',
-    borderRadius: 5,
-    overflow: 'hidden',
-  },
-  progress: {
-    height: '100%',
-    backgroundColor: '#62D2C3',
-  },
-  awardsContainer: {
-    marginTop: 20,
-    alignItems: 'center',
+  section1: {
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    marginVertical: 10,
+    fontFamily: "Poppins",
+    fontWeight: "bold",
   },
-  awardItem: {
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '80%',
-    marginBottom: 10,
+  sectionTitle2: {
+    fontSize: 18,
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    paddingLeft: 20,
+    marginVertical: 10,
   },
-  awardImage: {
-    width: 150,
-    height: 100,
+  sectionTitle1: {
+    fontSize: 24,
+    paddingTop: 15,
+    fontFamily: "Poppins",
+  },
+  tasksContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E1D6E3",
+    padding: 15,
+    paddingVertical: 0,
+    borderRadius: 10,
+    zIndex: 999,
+    borderWidth: 1,
+    height: 175,
+  },
+  taskmonth: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  tasksCount: {
+    fontSize: 40,
+    fontWeight: "bold",
     marginRight: 10,
+    marginBottom: 15,
+    fontFamily: "Poppins",
+  },
+  tasksImage: {
+    position: "absolute",
+    width: 150,
+    height: 150,
+    right: 1,
+    bottom: 0,
+    zIndex: -999,
+  },
+  sectionSubtitle: {
+    fontSize: 16,
+    marginTop: 5,
+    marginBottom: 15,
+    fontFamily: "Poppins",
+    color: "#535353",
+  },
+  tasksBreakdown: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  headerContainer: {
+    flexDirection: "row",
+    paddingRight: 50,
+  },
+  taskBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F2F2F2",
+    padding: 20,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    height: 250,
+    width: 200,
+    borderWidth: 1,
+  },
+  taskImage: {
+    width: 40,
+    height: 40,
+    marginBottom: 10,
+  },
+  taskImage1: {
+    width: 175,
+    height: 100,
+    marginBottom: 10,
+  },
+
+  category: {
+    fontSize: 18,
+    width: "100%",
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    textAlign: "left",
+  },
+  taskCount: {
+    fontSize: 50,
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    textAlign: "left",
+  },
+  counter: {
+    flexDirection: "row",
+    justifyContent: "start",
+    alignItems: "flex-end",
+    width: "100%",
+    height: 60,
+    textAlign: "left",
+  },
+  taskLabel: {
+    fontSize: 16,
+    color: "#717171",
+    textAlign: "left",
+  },
+  yearlyTasksContainer: {
+    backgroundColor: "#CCBDAB",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: 185,
+    marginBottom: 50,
+    borderWidth: 1,
+  },
+  yearlyTasksContent: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    marginVertical: 20,
+  },
+  yearlyImg: {
+    width: 150,
+    height: 150,
+    right: 20,
+    bottom: -20,
+  },
+  yearlyTasksSubtitle: {
+    fontSize: 16,
+    color: "#888888",
+    marginTop: 5,
   },
 });
 
-export default ProfileTab;
+export default ProfileScreen;

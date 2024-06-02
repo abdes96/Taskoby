@@ -53,12 +53,28 @@ const Tasks = () => {
       console.log(e);
     }
   };
+  const storeData = async (value) => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem('tasksData', jsonValue)
+      const storedValue = await AsyncStorage.getItem('tasksData');
+      console.log(storedValue);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  
+  
+    
   useEffect(() => {
     fetchData().then((data) => {
       setData(data);
       setLoading(false);
     });
-  }, []);
+    storeData(tasksData);
+
+  }
+  , []);
   if (loading) {
     return (
       <View>
@@ -148,6 +164,7 @@ const Tasks = () => {
                         flexDirection: "row",
                         alignItems: "center",
                         paddingBottom: 10,
+                        
                       }}
                     >
                       <Image
@@ -162,8 +179,7 @@ const Tasks = () => {
                       ...styles.taskStatus,
                       color: task.status === "Done" ? "#00B72E" : "#0074D1",
                     }}
-                  >
-                    {task.status}
+                  >{task.status}
                   </Text>
                 </View>
                 {task.status === "Done" && (
@@ -359,8 +375,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     flexDirection: "row",
     width: "100%",
+    height: "auto",
     padding: 10,
-    maxHeight: 150,
     borderWidth: 1,
     borderColor: "black",
   },
