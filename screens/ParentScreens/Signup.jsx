@@ -3,7 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import Button from "../../components/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Checkbox from "expo-checkbox";
-
+import { Alert } from "react-native";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../firebaseConfig";
 import {
   View,
   Text,
@@ -11,6 +14,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 
 const COLORS = {
@@ -23,18 +29,83 @@ const COLORS = {
 const Signup = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
-
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-
-  const handleRegister = () => {
-    navigation.navigate("CreateFamilyScreen");
-  };
-
   const [isFocused, setIsFocused] = useState(false);
 
+  const handleRegister = async () => {
+    if (!isChecked) {
+      Alert.alert("Error", "You must agree to the terms and conditions");
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const user = userCredential.user;
+      await updateProfile(user, {
+        displayName: `${firstname} ${lastname}`,
+      });
+
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, {
+        email: user.email,
+        displayName: `${firstname} ${lastname}`,
+        uid: user.uid,
+      });
+
+      const profileRef = doc(db, "users", user.uid , "profiles", "default");
+
+      await setDoc(profileRef, {
+            profileId: "default",
+            firstname: firstname,
+            lastname: lastname,
+            role: "parent",
+      });
+
+      console.log("User registered with:", user.email);
+      navigation.navigate("CreateFamilyScreen");
+    } catch (error) {
+      console.error(error);
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          Alert.alert(
+            "Registration Error",
+            "The email address is already in use by another account."
+          );
+          break;
+        case "auth/invalid-email":
+          Alert.alert("Registration Error", "The email address is not valid.");
+          break;
+        case "auth/operation-not-allowed":
+          Alert.alert(
+            "Registration Error",
+            "Email/password accounts are not enabled."
+          );
+          break;
+        case "auth/weak-password":
+          Alert.alert(
+            "Registration Error",
+            "The password is not strong enough."
+          );
+          break;
+        default:
+          Alert.alert("Registration Error", error.message);
+      }
+    }
+  };
 
   return (
     <LinearGradient
@@ -48,7 +119,11 @@ const Signup = ({ navigation }) => {
           source={require("../../assets/shape.png")}
           style={styles.image1}
         />
-      </View>
+      </View><KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView keyboardShouldPersistTaps="handled">
       <View style={{ marginTop: 80, marginHorizontal: 22 }}>
         <Text style={styles.title}>Create Account</Text>
 
@@ -63,98 +138,103 @@ const Signup = ({ navigation }) => {
           Lets help your family in completing tasks !
         </Text>
       </View>
+      
+          <View style={styles.container}>
+            <View style={styles.container}>
+              <Text style={styles.subtitle}>Register</Text>
 
-      <View style={styles.container}>
-        <View style={styles.container}>
-          <Text style={styles.subtitle}>Register</Text>
+              <Text style={styles.inputDescription}>Firstname</Text>
+              <TextInput
+                style={styles.input}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                placeholder="Firstname"
+                value={firstname}
+                onChangeText={setFirstname}
+              />
+              <Text style={styles.inputDescription}>Lastname</Text>
 
-          <Text style={styles.inputDescription}>Firstname</Text>
-          <TextInput
-               style={isFocused ? styles.inputActive : styles.input}
-               onFocus={() => setIsFocused(true)}
-               onBlur={() => setIsFocused(false)}
-            placeholder="Firstname"
-            value={firstname}
-            onChangeText={setFirstname}
-          />
-          <Text style={styles.inputDescription}>Lastname</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Lastname"
+                value={lastname}
+                onChangeText={setLastname}
+              />
+              <Text style={styles.inputDescription}>Email</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Lastname"
-            value={lastname}
-            onChangeText={setLastname}
-          />
-          <Text style={styles.inputDescription}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+              />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-          />
+              <Text style={styles.inputDescription}>Password</Text>
 
-          <Text style={styles.inputDescription}>Password</Text>
+              <View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  secureTextEntry={!isPasswordShown}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  style={styles.password}
+                  onPress={() => setIsPasswordShown(!isPasswordShown)}
+                >
+                  {isPasswordShown == true ? (
+                    <Ionicons name="eye-off" size={24} color={COLORS.black} />
+                  ) : (
+                    <Ionicons name="eye" size={24} color={COLORS.black} />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.inputDescription}>Confirm password</Text>
 
-          <View>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              secureTextEntry={!isPasswordShown}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              style={styles.password}
-              onPress={() => setIsPasswordShown(!isPasswordShown)}
-            >
-              {isPasswordShown == true ? (
-                <Ionicons name="eye-off" size={24} color={COLORS.black} />
-              ) : (
-                <Ionicons name="eye" size={24} color={COLORS.black} />
-              )}
-            </TouchableOpacity>
+              <TextInput
+                style={styles.input}
+                placeholder="confirm Password"
+                secureTextEntry={!isPasswordShown}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  paddingBottom: 16,
+                }}
+              >
+                <Checkbox
+                  style={{ marginRight: 8 }}
+                  value={isChecked}
+                  onValueChange={setIsChecked}
+                  color={isChecked ? COLORS.primary : undefined}
+                />
+
+                <Text>I aggree to the terms and conditions</Text>
+              </View>
+              <Button
+                title="Register"
+                onPress={handleRegister}
+                style={styles.button}
+                bgColor="#62D2C3"
+              />
+
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Text style={styles.loginLink}>
+                  Already have an account ?
+                  <Text style={[styles.loginText, styles.loginLink]}>
+                    {" "}
+                    Login
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={styles.inputDescription}>Confirm password</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="confirm Password"
-            secureTextEntry={!isPasswordShown}
-            value={password}
-            onChangeText={setPassword}
-          />
-
-          <View
-            style={{
-              flexDirection: "row",
-              paddingBottom: 16,
-            }}
-          >
-            <Checkbox
-              style={{ marginRight: 8 }}
-              value={isChecked}
-              onValueChange={setIsChecked}
-              color={isChecked ? COLORS.primary : undefined}
-            />
-
-            <Text>I aggree to the terms and conditions</Text>
-          </View>
-          <Button
-            title="Register"
-            onPress={handleRegister}
-            style={styles.button}
-            bgColor="#62D2C3"
-          />
-
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.loginLink}>
-              Already have an account ?
-              <Text style={[styles.loginText, styles.loginLink]}> Login</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 };

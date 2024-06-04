@@ -9,7 +9,9 @@ import Tasks from "./Tasks";
 
 const Tab = createBottomTabNavigator();
 
-function KidsTabNavigator() {
+function KidsTabNavigator({ route }) {
+  const { profile } = route.params;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -29,6 +31,7 @@ function KidsTabNavigator() {
       <Tab.Screen
         name="Homekid"
         component={Homekid}
+        initialParams={{ profile }}
         options={{
           tabBarIcon: ({ color, focused, size }) => {
             return (
@@ -42,6 +45,8 @@ function KidsTabNavigator() {
       <Tab.Screen
         name="Tasks"
         component={Tasks}
+        initialParams={{ profile }}
+
         options={{
           tabBarIcon: ({ color, focused, size }) => {
             return (
@@ -59,6 +64,7 @@ function KidsTabNavigator() {
       <Tab.Screen
         name="Profile"
         component={ProfileTab}
+        initialParams={{ profile }}
         options={{
           tabBarIcon: ({ color, focused, size }) => {
             return (

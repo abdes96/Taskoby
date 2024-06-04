@@ -10,6 +10,8 @@ import {
   Dimensions,
   ImageBackground,
 } from "react-native";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const tasksData = [
@@ -33,14 +35,21 @@ const tasksData = [
     image: require("../../assets/sport.png"),
   },
 ];
+
+
 const win = Dimensions.get("window");
 const ratio = win.width / 124;
 
-const Tasks = () => {
+const Tasks = ({ route }) => {
+  const { profile } = route.params;
+  const [profiles, setProfiles] = useState([]);
+  const auth = getAuth();
+  const user = auth.currentUser;
   const [selectedTab, setSelectedTab] = useState("Today");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  console.log(profile);
   const fetchData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem("@family_data");
@@ -55,26 +64,50 @@ const Tasks = () => {
   };
   const storeData = async (value) => {
     try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem('tasksData', jsonValue)
-      const storedValue = await AsyncStorage.getItem('tasksData');
-      console.log(storedValue);
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem("tasksData", jsonValue);
+      const storedValue = await AsyncStorage.getItem("tasksData");
+      // console.log(storedValue);
     } catch (e) {
       console.log(e);
     }
-  }
-  
-  
-    
+  };
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const db = getFirestore();
+      const userRef = doc(db, "users", user.uid);
+      const profilesRef = collection(userRef, "profiles");
+      const profilesSnapshot = await getDocs(profilesRef);
+
+      const profilesData = [];
+      for (const doc of profilesSnapshot.docs) {
+        const profileData = doc.data();
+        const tasksRef = collection(doc.ref, "tasks");
+        const tasksSnapshot = await getDocs(tasksRef);
+        const tasksData = tasksSnapshot.docs.map((taskDoc) => taskDoc.data());
+        profileData.tasks = tasksData;
+        profileData.numTasks = tasksData.length;
+        profilesData.push({ id: doc.id, ...profileData });
+      }
+      const childProfiles = profilesData.filter(
+        (profile) => profile.role === "child"
+      );
+
+      setProfiles(childProfiles);
+      storeData(profilesData);
+    };
+
+    fetchProfiles();
+  }, [user]);
+
   useEffect(() => {
     fetchData().then((data) => {
       setData(data);
       setLoading(false);
     });
     storeData(tasksData);
-
-  }
-  , []);
+  }, []);
   if (loading) {
     return (
       <View>
@@ -94,30 +127,58 @@ const Tasks = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text style={styles.tasks}>Tasks</Text>
-            <View style={styles.Profile}>
-              <View style={styles.dateContainer}>
-                <Image
-                  source={require("../../assets/date.png")}
-                  style={styles.DatePaper}
-                />
-                <View style={styles.date}>
-                  <Text style={styles.dateT}>{dayOfWeek}</Text>
-                  <Text style={styles.dateN}>{day}</Text>
-                  <Text style={styles.dateT}>{month}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20,  }}
+            >
+              {profile.role == "parent" &&
+                profiles.map((member) => (
+                  <View key={member.id} style={styles.profilesContainer}>
+                    <View
+                      style={[
+                        styles.circleBackgroundProfiles,
+                        { backgroundColor: member.color },
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: member.avatarUrl }}
+                        style={styles.profileImageProfiles}
+                      />
+                    </View>
+                    <Text style={styles.profileNameProfiles}>
+                      {member.firstName}
+                    </Text>
+                  </View>
+                ))}
+            </ScrollView>
+            {profile.role !== "parent" && (
+              <View style={styles.Profile}>
+                <View style={styles.dateContainer}>
+                  <Image
+                    source={require("../../assets/date.png")}
+                    style={styles.DatePaper}
+                  />
+                  <View style={styles.date}>
+                    <Text style={styles.dateT}>{dayOfWeek}</Text>
+                    <Text style={styles.dateN}>{day}</Text>
+                    <Text style={styles.dateT}>{month}</Text>
+                  </View>
+                </View>
+                <View style={styles.profileContainer}>
+                  <View
+                    style={[
+                      styles.circleBackground,
+                      { backgroundColor: data[0].color },
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: profile.avatarUrl }}
+                      style={styles.profileImage}
+                    />
+                  </View>
+                  <Text style={styles.profileName}>{data[0].name}</Text>
                 </View>
               </View>
-              <View style={styles.profileContainer}>
-                <View
-                  style={[
-                    styles.circleBackground,
-                    { backgroundColor: data[0].color },
-                  ]}
-                >
-                  <Image source={data[0].image} style={styles.profileImage} />
-                </View>
-                <Text style={styles.profileName}>{data[0].name}</Text>
-              </View>
-            </View>
+            )}
           </View>
           <View style={styles.noticeContainer}>
             <Text style={styles.important}>Important!</Text>
@@ -164,7 +225,6 @@ const Tasks = () => {
                         flexDirection: "row",
                         alignItems: "center",
                         paddingBottom: 10,
-                        
                       }}
                     >
                       <Image
@@ -179,7 +239,8 @@ const Tasks = () => {
                       ...styles.taskStatus,
                       color: task.status === "Done" ? "#00B72E" : "#0074D1",
                     }}
-                  >{task.status}
+                  >
+                    {task.status}
                   </Text>
                 </View>
                 {task.status === "Done" && (
@@ -238,7 +299,7 @@ const styles = StyleSheet.create({
     left: 0,
     fontSize: 24,
     textAlign: "center",
-    alignItems: "center", 
+    alignItems: "center",
     width: "100%",
   },
   dateT: {
@@ -257,6 +318,34 @@ const styles = StyleSheet.create({
     fontSize: 60,
     color: "#1978DA",
     fontFamily: "Fredericka",
+  },
+  profilesContainer: {
+    alignItems: "center",
+    margin: 10,
+  },
+  circleBackgroundProfiles: {
+    width: 120,
+    height: 120,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#030002",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
+  },
+  profileImageProfiles: {
+    width: 70,
+    height: 75,
+  },
+  profileNameProfiles: {
+    marginTop: 5,
+    fontSize: 18,
+    fontWeight: "bold",
   },
 
   profileImage: {

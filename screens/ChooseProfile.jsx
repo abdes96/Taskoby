@@ -1,5 +1,6 @@
-import { StackRouter } from "@react-navigation/native";
-import React from "react";
+import { useEffect, useState } from "react";
+import { collection, getDocs, doc, getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import {
   View,
   Text,
@@ -7,101 +8,116 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 
-const UserProfile = ({ name, imageSource, navigation, color }) => (
-  <TouchableOpacity
-    style={styles.profileContainer}
-    onPress={() => {
-      navigation.navigate("KidsTabNavigator");
-    }}
-  >
-    <View style={[styles.circleBackground, { backgroundColor: color }]}>
-      <Image source={imageSource} style={styles.profileImage} />
-    </View>
-    <Text style={styles.profileName}>{name}</Text>
-  </TouchableOpacity>
-);
+const UserProfile = ({ name, imageSource, color, navigation , profile }) => {
+  return (
+    <TouchableOpacity
+      style={styles.profileContainer}
+      onPress={() => {
+        navigation.navigate("KidsTabNavigator", { profile });
+      }}
+    >
+      <View style={[styles.circleBackground, { backgroundColor: color }]}>
+        <Image source={imageSource} style={styles.profileImage} />
+      </View>
+      <Text style={styles.profileName}>{name}</Text>
+    </TouchableOpacity>
+  );
+};
+
+
 
 const ChooseProfile = ({ navigation }) => {
+  const [profiles, setProfiles] = useState([]);
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const db = getFirestore();
+      const userRef = doc(db, "users", user.uid);
+      const profilesRef = collection(userRef, "profiles");
+      const profilesSnapshot = await getDocs(profilesRef);
+
+      const profilesData = profilesSnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setProfiles(profilesData);
+    };
+
+    fetchProfiles();
+  }, []);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.bg}>
-        <Image
-          source={require("../assets/Bonbon2.png")}
-          style={styles.bgimgs1}
-        />
+    <View style={styles.container}>
+      <SafeAreaView>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.bg}>
+            <Image
+              source={require("../assets/Bonbon2.png")}
+              style={styles.bgimgs1}
+            />
+            <Image
+              source={require("../assets/Bonbon3.png")}
+              style={styles.bgimgs2}
+            />
+            <Image
+              source={require("../assets/bonbon.png")}
+              style={styles.bgimgs3}
+            />
+            <Image
+              source={require("../assets/Bonbon4.png")}
+              style={styles.bgimgs4}
+            />
+            <Image
+              source={require("../assets/Bonbon5.png")}
+              style={styles.bgimgs5}
+            />
+            <Image
+              source={require("../assets/Bonbon6.png")}
+              style={styles.bgimgs6}
+            />
+          </View>
 
-        <Image
-          source={require("../assets/Bonbon3.png")}
-          style={styles.bgimgs2}
-        />
-        <Image
-          source={require("../assets/bonbon.png")}
-          style={styles.bgimgs3}
-        />
-        <Image
-          source={require("../assets/Bonbon4.png")}
-          style={styles.bgimgs4}
-        />
-        <Image
-          source={require("../assets/Bonbon5.png")}
-          style={styles.bgimgs5}
-        />
-        <Image
-          source={require("../assets/Bonbon6.png")}
-          style={styles.bgimgs6}
-        />
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Who's in</Text>
-          <Image
-            source={require("../assets/What.png")}
-            style={styles.questionMark}
-          />
-        </View>
-        <View style={styles.profilesContainer}>
-          <View style={styles.topLeftEdge} />
-          <View style={styles.topRightEdge} />
-          <View style={styles.bottomLeftEdge} />
-          <View style={styles.bottomRightEdge} />
-          <UserProfile
-            navigation={navigation}
-            name="Jessica"
-            imageSource={require("../assets/jes.png")}
-            color="#EE6A7D"
-          />
-
-          <UserProfile
-            navigation={navigation}
-            name="Jhon"
-            imageSource={require("../assets/john.png")}
-            color="#37CE5D"
-          />
-          <UserProfile
-            navigation={navigation}
-            name="Dad"
-            imageSource={require("../assets/dad.png")}
-            color="#0096A0"
-          />
-          <UserProfile
-            navigation={navigation}
-            name="Mom"
-            imageSource={require("../assets/mom.png")}
-            color={"#F9C3BE"}
-          />
-        </View>
-      </View>
-    </SafeAreaView>
+          <View style={styles.content}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.headerText}>Who's in</Text>
+              <Image
+                source={require("../assets/What.png")}
+                style={styles.questionMark}
+              />
+            </View>
+            <View style={styles.profilesContainer}>
+              <View style={styles.topLeftEdge} />
+              <View style={styles.topRightEdge} />
+              <View style={styles.bottomLeftEdge} />
+              <View style={styles.bottomRightEdge} />
+              {profiles.map((profile) => {
+                return (
+                  <UserProfile
+                    key={profile.id}
+                    navigation={navigation}
+                    profile={profile}
+                    name={profile.firstName}
+                    imageSource={{ uri: profile.avatarUrl }}
+                    color={profile.bgColor}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     display: "flex",
     justifyContent: "start",
   },
@@ -157,9 +173,10 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    position: "relative",
     zIndex: 1,
-    marginTop: 140,
+    marginVertical: 100,
+    padding: 20,
+    minHeight: 600,
   },
   bgProfiles: {
     width: "100%",
@@ -178,7 +195,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#000000",
     textAlign: "center",
-    marginVertical: 20,
+    marginBottom: 20,
   },
   questionMark: {
     height: 100,
@@ -188,6 +205,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     flexWrap: "wrap",
+    padding: 20,
   },
   topLeftEdge: {
     position: "absolute",

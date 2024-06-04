@@ -53,6 +53,7 @@ const CreateFamilyScreen = ({ navigation }) => {
       colors={[COLORS.grey, COLORS.primary]}
     >
       <View style={styles.container}>
+        <Scrollview> 
         <Text style={styles.title}>Create Family</Text>
 
         {guardians.map((guardian, index) => (
@@ -95,6 +96,7 @@ const CreateFamilyScreen = ({ navigation }) => {
         >
           <Icon name="add" size={24} color="white" />
         </Button>
+        </Scrollview>
       </View>
     </LinearGradient>
   );

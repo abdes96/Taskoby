@@ -10,7 +10,9 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ route }) => {
+  const { profile } = route.params;
+
   const [userData, setUserData] = useState({
     name: "Jessica",
     totalTasks: 30,
@@ -33,17 +35,47 @@ const ProfileScreen = () => {
     },
   ]);
 
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const db = getFirestore();
+      const userRef = doc(db, "users", user.uid);
+      const profilesRef = collection(userRef, "profiles");
+      const profilesSnapshot = await getDocs(profilesRef);
+
+      const profilesData = [];
+      for (const doc of profilesSnapshot.docs) {
+        const profileData = doc.data();
+        const tasksRef = collection(doc.ref, "tasks");
+        const tasksSnapshot = await getDocs(tasksRef);
+        const tasksData = tasksSnapshot.docs.map((taskDoc) => taskDoc.data());
+        profileData.tasks = tasksData;
+        profileData.numTasks = tasksData.length;
+        profilesData.push({ id: doc.id, ...profileData });
+      }
+      const childProfiles = profilesData.filter(profile => profile.role === 'child');
+      setProfiles(childProfiles);
+      storeData(profilesData);
+    };
+
+    fetchProfiles();
+  }, [user]);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.bgCircle}></View>
+          <View
+            style={[styles.bgCircle, { backgroundColor: profile.bgColor }]}
+          ></View>
           <View style={styles.profile}>
             <View style={styles.name}>
               <Text style={styles.familyName}>Glazers</Text>
               <Text style={styles.profileName}>{userData.name}</Text>
             </View>
-            <Image source={userData.image} style={styles.profileImage} />
+            <Image
+              source={{ uri: profile.avatarUrl }}
+              style={styles.profileImage}
+            />
           </View>
         </View>
 
@@ -153,7 +185,6 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "left",
     marginLeft: 5,
-    
   },
   profileName: {
     fontSize: 48,

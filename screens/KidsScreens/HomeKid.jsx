@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,14 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  getFirestore,
+  doc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const familyData = [
   {
@@ -46,48 +51,76 @@ const familyData = [
   },
 ];
 
-const Homekid = () => {
+const Homekid = ({ route }) => {
+  const { profile } = route.params;
+  const [profiles, setProfiles] = useState([]);
+  const [childs, setChilds] = useState([]);
+
+  const auth = getAuth();
+  const user = auth.currentUser;
 
   // To set data
-const storeData = async (value) => {
-  try {
-    const jsonValue = JSON.stringify(value)
-    await AsyncStorage.setItem('@family_data', jsonValue)
-    const storedValue = await AsyncStorage.getItem('@family_data');
-    console.log(storedValue);
-  } catch (e) {
-    console.log(e);
-  }
-}
-
+  const storeData = async (value) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem("@family_data", jsonValue);
+      const storedValue = await AsyncStorage.getItem("@family_data");
+      // console.log(storedValue);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   useEffect(() => {
-    storeData(familyData);
-  }, []);
-  
+    const fetchProfiles = async () => {
+      const db = getFirestore();
+      const userRef = doc(db, "users", user.uid);
+      const profilesRef = collection(userRef, "profiles");
+      const profilesSnapshot = await getDocs(profilesRef);
 
-  const renderFamilyMember = ({ item }) => (
+      const profilesData = [];
+      for (const doc of profilesSnapshot.docs) {
+        const profileData = doc.data();
+        const tasksRef = collection(doc.ref, "tasks");
+        const tasksSnapshot = await getDocs(tasksRef);
+        const tasksData = tasksSnapshot.docs.map((taskDoc) => taskDoc.data());
+        profileData.tasks = tasksData;
+        profileData.numTasks = tasksData.length;
+        profilesData.push({ id: doc.id, ...profileData });
+      }
+      const childProfiles = profilesData.filter(profile => profile.role === 'child');
+      childProfiles.sort((a, b) => b.numTasks - a.numTasks);
+
+      setChilds(childProfiles);
+      setProfiles(profilesData);
+      storeData(profilesData);
+    };
+
+    fetchProfiles();
+  }, [user]);
+
+  const renderFamilyMember = ({ item, index }) => (
     <View style={styles.member}>
       <View style={styles.rankContainer}>
         <Text
           style={[styles.rankText, item.id === "1" ? { color: "#FFD700" } : {}]}
         >
-          {item.id}
+          {index + 1}
         </Text>
-        <Text style={styles.memberName}>{item.name}</Text>
+        <Text style={styles.memberName}>{item.firstName}</Text>
       </View>
-      <View style={[styles.memberContainer, { backgroundColor: item.color2 }]}>
+      <View style={[styles.memberContainer, { backgroundColor: item.color }]}>
         {item.id === "1" && (
           <Image
             source={require("../../assets/first.png")}
             style={styles.extraImage}
           />
         )}
-        <Image source={item.image} style={styles.memberImage} />
+        <Image source={{ uri: item.avatarUrl }} style={styles.memberImage} />
         <View style={styles.detailsContainer}>
           <View style={styles.Record}>
             <Text>
-              <Text style={styles.recordtext}>{item.tasks}</Text>
+              <Text style={styles.recordtext}>{item.numTasks}</Text>
             </Text>
           </View>
           <View>
@@ -116,17 +149,20 @@ const storeData = async (value) => {
                 { marginLeft: -20, marginRight: -20 },
               ]}
             >
-              {familyData.map((member) => (
+              {profiles.map((member) => (
                 <View key={member.id} style={styles.profileContainer}>
                   <View
                     style={[
                       styles.circleBackground,
-                      { backgroundColor: member.color },
+                      { backgroundColor: member.bgColor },
                     ]}
                   >
-                    <Image source={member.image} style={styles.profileImage} />
+                    <Image
+                      source={{ uri: member.avatarUrl }}
+                      style={styles.profileImage}
+                    />
                   </View>
-                  <Text style={styles.profileName}>{member.name}</Text>
+                  <Text style={styles.profileName}>{member.firstName}</Text>
                 </View>
               ))}
             </ScrollView>
@@ -141,8 +177,10 @@ const storeData = async (value) => {
             <Text style={styles.sectionTitle}>
               Most tasks completed this month!
             </Text>
-            {familyData.map((item) => (
-              <View key={item.id}>{renderFamilyMember({ item })}</View>
+            {childs.map((profile, index) => (
+              <View key={profile.id}>
+                {renderFamilyMember({ item: profile, index })}
+              </View>
             ))}
           </View>
         </ScrollView>
@@ -175,7 +213,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     fontWeight: "bold",
   },
-  
+
   headerTextFamily: {
     fontSize: 24,
     textAlign: "left",
@@ -264,6 +302,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "black",
     alignItems: "center",
+    minWidth: "100%",
     shadowColor: "#030002",
     shadowOffset: {
       width: 6,
