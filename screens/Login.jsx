@@ -3,8 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import Button from "../components/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig"; 
 import {
   View,
   Text,
@@ -16,7 +14,16 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { collection , getFirestore , getDocs } from "firebase/firestore";
+import {
+  collection,
+  getFirestore,
+  getDocs,
+  addDoc,
+} from "firebase/firestore";
+import { auth } from "../firebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 
 const COLORS = {
   white: "#FFFFFF",
@@ -52,6 +59,18 @@ const Login = ({ navigation }) => {
       } else {
         console.log("Profiles found.");
       }
+
+      const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync(
+        {
+          projectId: Constants.expoConfig.extra.eas.projectId,
+        }
+      );
+
+      console.log("Expo push token:", expoPushToken);
+
+      // Save the push token in the user's tokens collection
+      const tokensRef = collection(db, "users", user.uid, "tokens");
+      await addDoc(tokensRef, { expoPushToken });
 
       console.log("User logged in with:", user.email);
     } catch (error) {

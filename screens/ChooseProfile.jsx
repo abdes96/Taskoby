@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 
-const UserProfile = ({ name, imageSource, color, navigation , profile }) => {
+const UserProfile = ({ name, imageSource, color, navigation, profile }) => {
   return (
     <TouchableOpacity
       style={styles.profileContainer}
@@ -26,8 +26,6 @@ const UserProfile = ({ name, imageSource, color, navigation , profile }) => {
     </TouchableOpacity>
   );
 };
-
-
 
 const ChooseProfile = ({ navigation }) => {
   const [profiles, setProfiles] = useState([]);
@@ -54,34 +52,33 @@ const ChooseProfile = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <SafeAreaView>
+        <View style={styles.bg}>
+          <Image
+            source={require("../assets/Bonbon2.png")}
+            style={styles.bgimgs1}
+          />
+          <Image
+            source={require("../assets/Bonbon3.png")}
+            style={styles.bgimgs2}
+          />
+          <Image
+            source={require("../assets/bonbon.png")}
+            style={styles.bgimgs3}
+          />
+          <Image
+            source={require("../assets/Bonbon4.png")}
+            style={styles.bgimgs4}
+          />
+          <Image
+            source={require("../assets/Bonbon5.png")}
+            style={styles.bgimgs5}
+          />
+          <Image
+            source={require("../assets/Bonbon6.png")}
+            style={styles.bgimgs6}
+          />
+        </View>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.bg}>
-            <Image
-              source={require("../assets/Bonbon2.png")}
-              style={styles.bgimgs1}
-            />
-            <Image
-              source={require("../assets/Bonbon3.png")}
-              style={styles.bgimgs2}
-            />
-            <Image
-              source={require("../assets/bonbon.png")}
-              style={styles.bgimgs3}
-            />
-            <Image
-              source={require("../assets/Bonbon4.png")}
-              style={styles.bgimgs4}
-            />
-            <Image
-              source={require("../assets/Bonbon5.png")}
-              style={styles.bgimgs5}
-            />
-            <Image
-              source={require("../assets/Bonbon6.png")}
-              style={styles.bgimgs6}
-            />
-          </View>
-
           <View style={styles.content}>
             <View style={styles.headerContainer}>
               <Text style={styles.headerText}>Who's in</Text>
@@ -118,8 +115,6 @@ const ChooseProfile = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    display: "flex",
-    justifyContent: "start",
   },
   bg: {
     position: "absolute",
@@ -205,7 +200,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     flexWrap: "wrap",
-    padding: 20,
+    padding: 10,
   },
   topLeftEdge: {
     position: "absolute",

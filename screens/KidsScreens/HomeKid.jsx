@@ -6,15 +6,11 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  Button,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  getFirestore,
-  doc,
-  collection,
-  getDocs,
-} from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
+import { getAuth, signOut } from "firebase/auth";
 
 const familyData = [
   {
@@ -88,7 +84,9 @@ const Homekid = ({ route }) => {
         profileData.numTasks = tasksData.length;
         profilesData.push({ id: doc.id, ...profileData });
       }
-      const childProfiles = profilesData.filter(profile => profile.role === 'child');
+      const childProfiles = profilesData.filter(
+        (profile) => profile.role === "child"
+      );
       childProfiles.sort((a, b) => b.numTasks - a.numTasks);
 
       setChilds(childProfiles);
@@ -98,6 +96,15 @@ const Homekid = ({ route }) => {
 
     fetchProfiles();
   }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigation.replace("Login"); 
+    } catch (error) {
+      console.error("Error logging out: ", error);
+    }
+  };
 
   const renderFamilyMember = ({ item, index }) => (
     <View style={styles.member}>
@@ -182,6 +189,7 @@ const Homekid = ({ route }) => {
                 {renderFamilyMember({ item: profile, index })}
               </View>
             ))}
+            <Button title="Logout" onPress={handleLogout} />
           </View>
         </ScrollView>
       </SafeAreaView>

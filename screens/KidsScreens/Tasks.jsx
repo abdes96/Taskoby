@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import TaskCreationModal from "./components/TaskCreationModal";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
+import { getFirestore, doc, collection, getDocs , onSnapshot} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const tasksData = [
@@ -52,7 +52,6 @@ const Tasks = ({ route }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [newTask, setNewTask] = useState("");
 
-  console.log(profile);
   const fetchData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem("@family_data");
@@ -81,12 +80,11 @@ const Tasks = ({ route }) => {
   };
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      const db = getFirestore();
-      const userRef = doc(db, "users", user.uid);
-      const profilesRef = collection(userRef, "profiles");
-      const profilesSnapshot = await getDocs(profilesRef);
+    const db = getFirestore();
+    const userRef = doc(db, "users", user.uid);
+    const profilesRef = collection(userRef, "profiles");
 
+    const unsubscribe = onSnapshot(profilesRef, async (profilesSnapshot) => {
       const profilesData = [];
       for (const doc of profilesSnapshot.docs) {
         const profileData = doc.data();
@@ -103,9 +101,9 @@ const Tasks = ({ route }) => {
 
       setProfiles(childProfiles);
       storeData(profilesData);
-    };
+    });
 
-    fetchProfiles();
+    return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
@@ -141,8 +139,7 @@ const Tasks = ({ route }) => {
         onClose={() => setModalVisible(false)}
         onAddTask={handleAddTask}
         selectedProfile={selectedProfile}
-        allProfiles={profiles}   
-
+        allProfiles={profiles}
       />
       <SafeAreaView>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -192,16 +189,20 @@ const Tasks = ({ route }) => {
                         : "Loading..."}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => setModalVisible(true)}
-                    style={styles.addButtonContainer}
-                  >
-                    <Text style={styles.btnText}>Add a new task</Text>
-                    <Image
-                      source={require("../../assets/add.png")}
-                      style={styles.addIcon}
-                    />
-                  </TouchableOpacity>
+                  {selectedProfile && (
+                    <TouchableOpacity
+                      onPress={() => setModalVisible(true)}
+                      style={styles.addButtonContainer}
+                    >
+                      <Text style={styles.btnText}>
+                        Add a new task for {selectedProfile.firstName}
+                      </Text>
+                      <Image
+                        source={require("../../assets/add.png")}
+                        style={styles.addIcon}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </>
             )}
@@ -328,8 +329,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     marginVertical: 10,
   },
-  
-  
+
   header: {
     marginTop: 50,
   },

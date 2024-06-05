@@ -11,9 +11,10 @@ import {
 } from "react-native";
 import ToggleButton from "react-native-toggle-element";
 import { db } from "../../../firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import DatePicker from "react-native-modern-datepicker";
+import * as Notifications from "expo-notifications";
 
 const images = {
   dropdownIcon: require("../../../assets/dropdown.png"),
@@ -86,7 +87,6 @@ const TaskCreationModal = ({
     profile: null,
     status: "pending",
   });
-  console.log(newTask);
 
   const handleAddTask = async () => {
     if (!newTask.title) {
@@ -104,7 +104,7 @@ const TaskCreationModal = ({
       return;
     }
 
-    const taskWithProfile = { ...newTask, profile: selectedProfile };
+    const taskWithProfile = { ...newTask };
 
     try {
       const auth = getAuth();
@@ -119,6 +119,7 @@ const TaskCreationModal = ({
           );
           await addDoc(tasksRef, taskWithProfile);
         }
+
         console.log("Task added successfully to all profiles!");
       } else {
         const tasksRef = collection(
@@ -126,7 +127,31 @@ const TaskCreationModal = ({
           `users/${user.uid}/profiles/${selectedProfile.id}/tasks`
         );
         await addDoc(tasksRef, taskWithProfile);
+
         console.log("Task added successfully!");
+      }
+
+      const tokensRef = collection(db, `users/${user.uid}/tokens`);
+      const tokensSnapshot = await getDocs(tokensRef);
+      const tokens = tokensSnapshot.docs.map((doc) => doc.data().expoPushToken);
+
+      // Send a notification to each token
+      for (let token of tokens) {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "accept-encoding": "gzip, deflate",
+            host: "exp.host",
+          },
+          body: JSON.stringify({
+            to: token,
+            title: "New Task Added",
+            body: "A new task has been added.",
+            data: { extraData: "Some extra data" },
+          }),
+        });
       }
 
       onAddTask(taskWithProfile);
@@ -553,6 +578,7 @@ const styles = {
     height: "100%",
     padding: 20,
     alignItems: "center",
+    marginTop: 22,
   },
   modalText: {
     width: "100%",

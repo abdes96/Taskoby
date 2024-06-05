@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Home_Harmony",
-    "slug": "Home_Harmony",
+    "slug": "homeharmony",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,6 +28,12 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7379c2e9-f891-4c84-8908-c093cd2f6d6a"
+      }
+    },
+    "owner": "abdes9600"
   }
 }
