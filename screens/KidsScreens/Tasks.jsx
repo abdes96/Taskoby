@@ -10,6 +10,7 @@ import {
   Dimensions,
   ImageBackground,
 } from "react-native";
+import TaskCreationModal from "./components/TaskCreationModal";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -36,7 +37,6 @@ const tasksData = [
   },
 ];
 
-
 const win = Dimensions.get("window");
 const ratio = win.width / 124;
 
@@ -48,6 +48,9 @@ const Tasks = ({ route }) => {
   const [selectedTab, setSelectedTab] = useState("Today");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [newTask, setNewTask] = useState("");
 
   console.log(profile);
   const fetchData = async () => {
@@ -71,6 +74,10 @@ const Tasks = ({ route }) => {
     } catch (e) {
       console.log(e);
     }
+  };
+
+  const handleAddTask = () => {
+    setModalVisible(false);
   };
 
   useEffect(() => {
@@ -102,6 +109,12 @@ const Tasks = ({ route }) => {
   }, [user]);
 
   useEffect(() => {
+    if (profiles.length > 0 && !selectedProfile) {
+      setSelectedProfile(profiles[0]);
+    }
+  }, [profiles]);
+
+  useEffect(() => {
     fetchData().then((data) => {
       setData(data);
       setLoading(false);
@@ -123,33 +136,76 @@ const Tasks = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <TaskCreationModal
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+        onAddTask={handleAddTask}
+        selectedProfile={selectedProfile}
+        allProfiles={profiles}   
+
+      />
       <SafeAreaView>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text style={styles.tasks}>Tasks</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20,  }}
-            >
-              {profile.role == "parent" &&
-                profiles.map((member) => (
-                  <View key={member.id} style={styles.profilesContainer}>
-                    <View
-                      style={[
-                        styles.circleBackgroundProfiles,
-                        { backgroundColor: member.color },
-                      ]}
+            {profile.role == "parent" && (
+              <>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 20 }}
+                >
+                  {profiles.map((member) => (
+                    <TouchableOpacity
+                      key={member.id}
+                      onPress={() => setSelectedProfile(member)}
+                      style={styles.profilesContainer}
                     >
-                      <Image
-                        source={{ uri: member.avatarUrl }}
-                        style={styles.profileImageProfiles}
-                      />
-                    </View>
-                    <Text style={styles.profileNameProfiles}>
-                      {member.firstName}
+                      <View
+                        style={[
+                          styles.circleBackgroundProfiles,
+                          {
+                            backgroundColor:
+                              selectedProfile &&
+                              selectedProfile.id === member.id
+                                ? "#BEACFF"
+                                : "#EDE8FF",
+                          },
+                        ]}
+                      >
+                        <Image
+                          source={{ uri: member.avatarUrl }}
+                          style={styles.profileImageProfiles}
+                        />
+                      </View>
+                      <Text style={styles.profileNameProfiles}>
+                        {member.firstName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <View style={styles.SelectedProfile}>
+                  <View>
+                    <Text style={styles.SelectedProfileName}>
+                      {selectedProfile
+                        ? `${selectedProfile.firstName}'s tasks`
+                        : "Loading..."}
                     </Text>
                   </View>
-                ))}
-            </ScrollView>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(true)}
+                    style={styles.addButtonContainer}
+                  >
+                    <Text style={styles.btnText}>Add a new task</Text>
+                    <Image
+                      source={require("../../assets/add.png")}
+                      style={styles.addIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
             {profile.role !== "parent" && (
               <View style={styles.Profile}>
                 <View style={styles.dateContainer}>
@@ -180,10 +236,12 @@ const Tasks = ({ route }) => {
               </View>
             )}
           </View>
-          <View style={styles.noticeContainer}>
-            <Text style={styles.important}>Important!</Text>
-            <Text style={styles.noticeText}>movie night is today!</Text>
-          </View>
+          {profile.role !== "parent" && (
+            <View style={styles.noticeContainer}>
+              <Text style={styles.important}>Important!</Text>
+              <Text style={styles.noticeText}>movie night is today!</Text>
+            </View>
+          )}
           <View style={styles.tabsContainer}>
             <TouchableOpacity
               style={selectedTab === "Today" ? styles.tabSelected : styles.tab}
@@ -270,6 +328,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     marginVertical: 10,
   },
+  
+  
   header: {
     marginTop: 50,
   },
@@ -290,6 +350,47 @@ const styles = StyleSheet.create({
   profileContainer: {
     alignItems: "center",
   },
+  addButtonContainer: {
+    backgroundColor: "#FFDFAC",
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 15,
+    marginVertical: 10,
+    shadowColor: "#030002",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
+  },
+  SelectedProfile: {
+    paddingHorizontal: 20,
+    flexDirection: "column",
+  },
+  SelectedProfileName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    fontFamily: "Poppins",
+    textAlign: "left",
+    marginTop: 20,
+  },
+  btnText: {
+    fontSize: 20,
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    textAlign: "left",
+    marginLeft: 10,
+  },
+  addIcon: {
+    width: 50,
+    height: 50,
+  },
+
   dateContainer: {
     position: "relative",
   },
@@ -328,6 +429,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 25,
     justifyContent: "center",
+    backgroundColor: "#EDE8FF",
     alignItems: "center",
     shadowColor: "#030002",
     shadowOffset: {
@@ -339,13 +441,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   profileImageProfiles: {
-    width: 70,
+    width: 75,
     height: 75,
   },
   profileNameProfiles: {
     marginTop: 5,
-    fontSize: 18,
+    fontSize: 26,
     fontWeight: "bold",
+    fontFamily: "Poppins",
   },
 
   profileImage: {
@@ -390,9 +493,9 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 20,
-    marginBottom: 50,
+    justifyContent: "space-between",
+    marginVertical: 15,
+    paddingHorizontal: 20,
   },
   tab: {
     padding: 10,
