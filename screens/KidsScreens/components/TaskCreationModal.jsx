@@ -85,7 +85,7 @@ const TaskCreationModal = ({
     pictureProof: false,
     taskForEveryone: false,
     profile: null,
-    status: "pending",
+    status: "To-do",
   });
 
   const handleAddTask = async () => {

@@ -9,10 +9,17 @@ import {
   TouchableOpacity,
   Dimensions,
   ImageBackground,
+  Modal,
 } from "react-native";
 import TaskCreationModal from "./components/TaskCreationModal";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, collection, getDocs , onSnapshot} from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  collection,
+  getDocs,
+  onSnapshot,
+} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const tasksData = [
@@ -50,26 +57,19 @@ const Tasks = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [newTask, setNewTask] = useState("");
+  const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const [selectedProfileTasks, setSelectedProfileTasks] = useState([]);
 
   const fetchData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem("@family_data");
       if (jsonValue != null) {
         const data = JSON.parse(jsonValue);
+
         return data;
       }
       return null;
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  const storeData = async (value) => {
-    try {
-      const jsonValue = JSON.stringify(value);
-      await AsyncStorage.setItem("tasksData", jsonValue);
-      const storedValue = await AsyncStorage.getItem("tasksData");
-      // console.log(storedValue);
     } catch (e) {
       console.log(e);
     }
@@ -100,7 +100,7 @@ const Tasks = ({ route }) => {
       );
 
       setProfiles(childProfiles);
-      storeData(profilesData);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -112,12 +112,39 @@ const Tasks = ({ route }) => {
     }
   }, [profiles]);
 
+  // tasks of selected profile
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (selectedProfile) {
+        const db = getFirestore();
+        const profileRef = doc(
+          db,
+          "users",
+          user.uid,
+          "profiles",
+          selectedProfile.id
+        );
+        const tasksRef = collection(profileRef, "tasks");
+        const tasksSnapshot = await getDocs(tasksRef);
+        const tasksData = tasksSnapshot.docs.map((taskDoc) => ({
+          ...taskDoc.data(),
+          id: taskDoc.id,
+        }));
+
+        setSelectedProfileTasks(tasksData);
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [selectedProfile]);
+
   useEffect(() => {
     fetchData().then((data) => {
       setData(data);
       setLoading(false);
     });
-    storeData(tasksData);
   }, []);
   if (loading) {
     return (
@@ -154,6 +181,7 @@ const Tasks = ({ route }) => {
                 >
                   {profiles.map((member) => (
                     <TouchableOpacity
+                      activeOpacity={1}
                       key={member.id}
                       onPress={() => setSelectedProfile(member)}
                       style={styles.profilesContainer}
@@ -232,7 +260,7 @@ const Tasks = ({ route }) => {
                       style={styles.profileImage}
                     />
                   </View>
-                  <Text style={styles.profileName}>{data[0].name}</Text>
+                  <Text style={styles.profileName}>{data[0].firstName}</Text>
                 </View>
               </View>
             )}
@@ -258,7 +286,10 @@ const Tasks = ({ route }) => {
             >
               <Text style={styles.tabText}>Tomorrow</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.tabOption}>
+            <TouchableOpacity
+              style={styles.tabOption}
+              onPress={() => setMenuVisible(true)}
+            >
               <Image
                 source={require("../../assets/option.png")}
                 style={styles.menuIcon}
@@ -266,58 +297,180 @@ const Tasks = ({ route }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.taskContainer}>
-            {tasksData.map((task, index) => (
-              <View
-                key={index}
-                style={{
-                  ...styles.taskCard,
-                  backgroundColor:
-                    task.status === "Done" ? "#E0F9E6" : "#EAF6FF",
-                }}
-              >
-                <View style={styles.textTask}>
-                  <Text style={styles.taskCategory}>{task.category}</Text>
-                  <Text style={styles.taskTitle}>{task.title}</Text>
-                  {task.time && (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        paddingBottom: 10,
-                      }}
-                    >
-                      <Image
-                        source={require("../../assets/sand.png")}
-                        style={{ width: 25, height: 25, marginRight: 10 }}
-                      />
-                      <Text style={styles.taskTime}>{task.time}</Text>
-                    </View>
-                  )}
-                  <Text
+            {selectedProfileTasks
+              .filter((task) => {
+                const taskDate = task.dueDate.toDate();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                if (selectedTab === "Today") {
+                  return (
+                    taskDate.getDate() === today.getDate() &&
+                    taskDate.getMonth() === today.getMonth() &&
+                    taskDate.getFullYear() === today.getFullYear()
+                  );
+                }
+
+                // If the selected tab is "Tomorrow", return tasks due tomorrow
+                if (selectedTab === "Tomorrow") {
+                  return (
+                    taskDate.getDate() === tomorrow.getDate() &&
+                    taskDate.getMonth() === tomorrow.getMonth() &&
+                    taskDate.getFullYear() === tomorrow.getFullYear()
+                  );
+                }
+
+                if (selectedTab === "This Month") {
+                  return (
+                    taskDate.getMonth() === today.getMonth() &&
+                    taskDate.getFullYear() === today.getFullYear()
+                  );
+                }
+
+                if (selectedTab === "Next 7 Days") {
+                  const nextWeek = new Date(today);
+                  nextWeek.setDate(nextWeek.getDate() + 7);
+                  return taskDate >= today && taskDate <= nextWeek;
+                }
+
+                if (selectedTab === "All") {
+                  return task.status === "To-do";
+                }
+
+                return true;
+              })
+              .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
+              .map((task, index) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const isPastDue = task.dueDate.toDate() < yesterday;
+                return (
+                  <View
+                    key={index}
                     style={{
-                      ...styles.taskStatus,
-                      color: task.status === "Done" ? "#00B72E" : "#0074D1",
+                      ...styles.taskCard,
+                      backgroundColor:
+                        task.status === "Done"
+                          ? "#E0F9E6"
+                          : isPastDue && task.status === "To-do"
+                          ? "#ffcccb"
+                          : "#EAF6FF",
                     }}
                   >
-                    {task.status}
-                  </Text>
-                </View>
-                {task.status === "Done" && (
-                  <Image
-                    source={require("../../assets/done.png")}
-                    style={styles.doneImage}
-                  />
-                )}
+                    <View style={styles.textTask}>
+                      <Text style={styles.taskCategory}>{task.category}</Text>
+                      <Text style={styles.taskTitle}>{task.title}</Text>
+                      {task.time && (
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            paddingBottom: 10,
+                          }}
+                        >
+                          <Image
+                            source={require("../../assets/sand.png")}
+                            style={{ width: 25, height: 25, marginRight: 10 }}
+                          />
+                          <Text style={styles.taskTime}>{task.time}</Text>
+                        </View>
+                      )}
+                      <Text
+                        style={{
+                          ...styles.taskStatus,
+                          color: task.status === "Done" ? "#00B72E" : "#0074D1",
+                        }}
+                      >
+                        {task.status}
+                      </Text>
+                    </View>
+                    {task.status === "Done" && (
+                      <Image
+                        source={require("../../assets/done.png")}
+                        style={styles.doneImage}
+                      />
+                    )}
 
-                <ImageBackground
-                  source={task.image}
-                  style={styles.taskImage}
-                  resizeMode="contain"
-                />
-              </View>
-            ))}
+                    <ImageBackground
+                      source={
+                        task.category === "Cleaning"
+                          ? require("../../assets/clean.png")
+                          : task.category === "Sport"
+                          ? require("../../assets/sport.png")
+                          : task.category === "Study"
+                          ? require("../../assets/study.png")
+                          : task.image
+                      }
+                      style={styles.taskImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                );
+              })}
           </View>
         </ScrollView>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isMenuVisible}
+          onRequestClose={() => {
+            setModalVisible(!isMenuVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <TouchableOpacity
+                style={
+                  selectedTab === "All"
+                    ? styles.tabSelected
+                    : styles.modalButton
+                }
+                onPress={() => {
+                  setSelectedTab("All");
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={
+                  selectedTab === "Next 7 Days"
+                    ? styles.tabSelected
+                    : styles.modalButton
+                }
+                onPress={() => {
+                  setSelectedTab("Next 7 Days");
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>Next 7 Days</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={
+                  selectedTab === "This Month"
+                    ? styles.tabSelected
+                    : styles.modalButton
+                }
+                onPress={() => {
+                  setSelectedTab("This Month");
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>This Month</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setMenuVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -473,6 +626,7 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 50,
     fontWeight: "bold",
+    fontFamily: "Poppins",
     color: "#000000",
   },
   noticeContainer: {
@@ -573,7 +727,7 @@ const styles = StyleSheet.create({
     borderColor: "black",
   },
   taskCategory: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#000000",
     fontFamily: "Poppins",
   },
@@ -591,7 +745,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
   },
   taskStatus: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: "Poppins",
   },
   taskTime: {
@@ -625,6 +779,62 @@ const styles = StyleSheet.create({
   navIconImage: {
     width: 30,
     height: 30,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    justifyContent: "space-around",
+    minHeight: 300,
+    width: 350,
+    borderRadius: 15,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalButton: {
+    backgroundColor: "#EDE8FF",
+    borderRadius: 15,
+    padding: 10,
+    elevation: 2,
+    margin: 10,
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+  },
+  modalText: {
+    fontSize: 20,
+    color: "#000000",
+    textAlign: "center",
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+  },
+  closeButton: {
+    backgroundColor: "#EDE8FF",
+    borderRadius: 15,
+    padding: 10,
+    elevation: 2,
+    right: -20,
+    position: "absolute",
+    top: -10,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: "#000000",
+    textAlign: "center",
+    fontFamily: "Poppins",
+    fontWeight: "bold",
   },
 });
 

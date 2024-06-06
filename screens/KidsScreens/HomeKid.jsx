@@ -55,13 +55,11 @@ const Homekid = ({ route }) => {
   const auth = getAuth();
   const user = auth.currentUser;
 
-  // To set data
   const storeData = async (value) => {
     try {
       const jsonValue = JSON.stringify(value);
       await AsyncStorage.setItem("@family_data", jsonValue);
-      const storedValue = await AsyncStorage.getItem("@family_data");
-      // console.log(storedValue);
+    
     } catch (e) {
       console.log(e);
     }
