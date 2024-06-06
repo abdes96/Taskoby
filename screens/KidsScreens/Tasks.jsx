@@ -396,7 +396,7 @@ const Tasks = ({ route }) => {
 
                     <ImageBackground
                       source={
-                        task.category === "Cleaning"
+                          task.category === "Cleaning"
                           ? require("../../assets/clean.png")
                           : task.category === "Sport"
                           ? require("../../assets/sport.png")

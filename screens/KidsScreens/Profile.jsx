@@ -9,9 +9,19 @@ import {
   Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getFirestore, collection, getDocs, doc } from "firebase/firestore";
+import { auth } from "../../firebaseConfig";
 
 const ProfileScreen = ({ route }) => {
   const { profile } = route.params;
+  const [tasks, setTasks] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [taskSummary, setTaskSummary] = useState({
+    totalTasks: 0,
+    yearlyTasks: 0,
+    tasksByCategory: [],
+    lastYearTasks: 0,
+  });
 
   const [userData, setUserData] = useState({
     name: "Jessica",
@@ -36,41 +46,91 @@ const ProfileScreen = ({ route }) => {
   ]);
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      const db = getFirestore();
-      const userRef = doc(db, "users", user.uid);
-      const profilesRef = collection(userRef, "profiles");
-      const profilesSnapshot = await getDocs(profilesRef);
-
-      const profilesData = [];
-      for (const doc of profilesSnapshot.docs) {
-        const profileData = doc.data();
-        const tasksRef = collection(doc.ref, "tasks");
+    const fetchTasks = async () => {
+      try {
+        const user = auth.currentUser;
+        const db = getFirestore();
+        const tasksRef = collection(
+          db,
+          `users/${user.uid}/profiles/${profile.id}/tasks`
+        );
         const tasksSnapshot = await getDocs(tasksRef);
-        const tasksData = tasksSnapshot.docs.map((taskDoc) => taskDoc.data());
-        profileData.tasks = tasksData;
-        profileData.numTasks = tasksData.length;
-        profilesData.push({ id: doc.id, ...profileData });
+
+        const allTasks = [];
+        tasksSnapshot.forEach((doc) => {
+          allTasks.push({ id: doc.id, ...doc.data() });
+        });
+
+        setTasks(allTasks);
+      } catch (error) {
+        console.error("Error fetching tasks: ", error);
       }
-      const childProfiles = profilesData.filter(profile => profile.role === 'child');
-      setProfiles(childProfiles);
-      storeData(profilesData);
     };
 
-    fetchProfiles();
-  }, [user]);
+    fetchTasks();
+  }, [profile]);
+
+  useEffect(() => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+
+    const filtered = tasks.filter(
+      (task) =>
+        task.dueDate.toDate().getFullYear() === currentYear &&
+        task.status === "Done"
+    );
+
+    const totalTasks = filtered.length;
+
+    const lastYearTasks = tasks.filter(
+      (task) =>
+        task.dueDate.toDate().getFullYear() === currentYear - 1 &&
+        task.status === "Done"
+    ).length;
+
+    const thisMonthTasks = tasks.filter(
+      (task) =>
+        task.dueDate.toDate().getMonth() === currentMonth &&
+        task.dueDate.toDate().getFullYear() === currentYear &&
+        task.status === "Done"
+    ).length;
+
+    const categories = [...new Set(tasks.map((task) => task.category))];
+
+    const tasksByCategory = categories.map((category) => {
+      const tasksInCategory = filtered.filter(
+        (task) =>
+          task.category === category &&
+          task.dueDate.toDate().getMonth() === currentMonth &&
+          task.dueDate.toDate().getFullYear() === currentYear &&
+          task.status === "Done"
+      ).length;
+
+      return { category, count: tasksInCategory };
+    });
+
+    console.log(tasksByCategory);
+
+    setFilteredTasks(filtered);
+    setTaskSummary({
+      yearlyTasks: totalTasks,
+      lastYearTasks: lastYearTasks,
+      totalTasks: thisMonthTasks,
+      tasksByCategory: tasksByCategory,
+    });
+  }, [tasks]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View
-            style={[styles.bgCircle, { backgroundColor: profile.bgColor }]}
+            style={[styles.bgCircle, { backgroundColor: profile.color }]}
           ></View>
           <View style={styles.profile}>
             <View style={styles.name}>
-              <Text style={styles.familyName}>Glazers</Text>
-              <Text style={styles.profileName}>{userData.name}</Text>
+              <Text style={styles.familyName}>{profile.lastName}</Text>
+              <Text style={styles.profileName}>{profile.firstName}</Text>
             </View>
             <Image
               source={{ uri: profile.avatarUrl }}
@@ -83,7 +143,7 @@ const ProfileScreen = ({ route }) => {
           <View style={styles.tasksContainer}>
             <View style={styles.taskmonth}>
               <Text style={styles.sectionTitle1}>Tasks completed</Text>
-              <Text style={styles.tasksCount}>{userData.totalTasks}</Text>
+              <Text style={styles.tasksCount}>{taskSummary.totalTasks}</Text>
               <Text style={styles.sectionSubtitle}>This month</Text>
             </View>
             <Image
@@ -104,9 +164,20 @@ const ProfileScreen = ({ route }) => {
                 { marginLeft: 0 },
               ]}
             >
-              {data.map((item, index) => (
+              {taskSummary.tasksByCategory.map((item, index) => (
                 <View key={index} style={styles.taskBox}>
-                  <Image source={item.image} style={styles.taskImage1} />
+                  <Image
+                    source={
+                      item.category === "Sport"
+                        ? require("../../assets/sport.png")
+                        : item.category === "Study"
+                        ? require("../../assets/study.png")
+                        : item.category === "Cleaning"
+                        ? require("../../assets/spong.png")
+                        : null
+                    }
+                    style={styles.taskImage1}
+                  />
                   <Text style={styles.category}>{item.category}</Text>
                   <View style={styles.counter}>
                     <Text style={styles.taskCount}>{item.count}</Text>
@@ -125,9 +196,17 @@ const ProfileScreen = ({ route }) => {
               <Text style={styles.sectionTitle1}>Tasks completed</Text>
 
               <Text style={styles.yearlyTasksSubtitle}>
-                103 more than last year!
+                {taskSummary.yearlyTasks > taskSummary.lastYearTasks
+                  ? `${
+                      taskSummary.yearlyTasks - taskSummary.lastYearTasks
+                    } more than last year!`
+                  : taskSummary.yearlyTasks < taskSummary.lastYearTasks
+                  ? `${
+                      taskSummary.lastYearTasks - taskSummary.yearlyTasks
+                    } less than last year!`
+                  : `Same as last year!`}
               </Text>
-              <Text style={styles.tasksCount}>{userData.yearlyTasks}</Text>
+              <Text style={styles.tasksCount}>{taskSummary.yearlyTasks}</Text>
               <Text style={styles.sectionSubtitle}>this year</Text>
             </View>
             <View>
@@ -175,7 +254,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   profileImage: {
-    width: 110,
+    width: 120,
     height: 120,
     borderRadius: 40,
     marginBottom: 10,
@@ -228,6 +307,14 @@ const styles = StyleSheet.create({
     zIndex: 999,
     borderWidth: 1,
     height: 175,
+    shadowColor: "#030002",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
   },
   taskmonth: {
     flexDirection: "column",
