@@ -14,24 +14,12 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import {
-  collection,
-  getFirestore,
-  getDocs,
-  addDoc,
-} from "firebase/firestore";
+import { collection, getFirestore, getDocs, addDoc } from "firebase/firestore";
 import { auth } from "../firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 
-const COLORS = {
-  white: "#FFFFFF",
-  black: "#222222",
-  primary: "#007260",
-  secondary: "#0000",
-  grey: "#EEEEEE",
-};
 const db = getFirestore();
 
 const Login = ({ navigation }) => {
@@ -111,97 +99,161 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      style={{
-        flex: 1,
-      }}
-      colors={[COLORS.grey, COLORS.grey]}
-    >
-      <View>
-        <Image source={require("../assets/shape.png")} style={styles.image1} />
-      </View>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
+        <View style={styles.bg}>
+          <Image
+            source={require("../assets/Bonbon2.png")}
+            style={styles.bgimgs1}
+          />
+          <Image
+            source={require("../assets/Bonbon3.png")}
+            style={styles.bgimgs2}
+          />
+          <Image
+            source={require("../assets/bonbon.png")}
+            style={styles.bgimgs3}
+          />
+          <Image
+            source={require("../assets/Bonbon4.png")}
+            style={styles.bgimgs4}
+          />
+          <Image
+            source={require("../assets/Bonbon5.png")}
+            style={styles.bgimgs5}
+          />
+          <Image
+            source={require("../assets/Bonbon6.png")}
+            style={styles.bgimgs6}
+          />
+        </View>
         <ScrollView keyboardShouldPersistTaps="handled">
-          <View style={{ marginTop: 80, marginHorizontal: 22 }}>
-            <Text style={styles.title}>Login</Text>
+          <View style={styles.content}>
+            <View style={styles.intro}>
+              <Text style={styles.title}>Login</Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Poppins",
+                  fontWeight: "bold",
+                }}
+                > 
+                Welcome back! Please login to your account.
+              </Text>
+            </View>
+            <Text style={styles.subtitle}>Login</Text>
 
-            <Text
-              style={{
-                fontSize: 16,
-                color: COLORS.black,
-                fontFamily: "Poppins",
-                fontWeight: "bold",
-              }}
-            >
-              Welcome back! Please login to your account.
-            </Text>
-          </View>
+            <Text style={styles.inputDescription}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+            />
 
-          <View style={styles.container}>
-            <View style={styles.container}>
-              <Text style={styles.subtitle}>Login</Text>
-
-              <Text style={styles.inputDescription}>Email</Text>
+            <Text style={styles.inputDescription}>Password</Text>
+            <View>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
+                placeholder="Password"
+                secureTextEntry={!isPasswordShown}
+                value={password}
+                onChangeText={setPassword}
               />
-
-              <Text style={styles.inputDescription}>Password</Text>
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  secureTextEntry={!isPasswordShown}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <TouchableOpacity
-                  style={styles.password}
-                  onPress={() => setIsPasswordShown(!isPasswordShown)}
-                >
-                  {isPasswordShown == true ? (
-                    <Ionicons name="eye-off" size={24} color={COLORS.black} />
-                  ) : (
-                    <Ionicons name="eye" size={24} color={COLORS.black} />
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              <Button
-                title="Login"
-                onPress={handleLogin}
-                style={styles.button}
-                bgColor="#62D2C3"
-              />
-
-              <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-                <Text style={styles.signupLink}>
-                  Don't have an account?
-                  <Text style={[styles.signupText, styles.signupLink]}>
-                    Sign Up
-                  </Text>
-                </Text>
+              <TouchableOpacity
+                style={styles.password}
+                onPress={() => setIsPasswordShown(!isPasswordShown)}
+              >
+                {isPasswordShown == true ? (
+                  <Ionicons name="eye-off" size={24} color="black" />
+                ) : (
+                  <Ionicons name="eye" size={24} color="black" />
+                )}
               </TouchableOpacity>
             </View>
+
+            <Button
+              title="Login"
+              onPress={handleLogin}
+              style={styles.button}
+              bgColor="#62D2C3"
+            />
+
+            <TouchableOpacity
+              style={styles.signupLink}
+              onPress={() => navigation.navigate("Signup")}
+            >
+              <Text style={styles.signupText1}>Already have an account ? </Text>
+
+              <Text style={styles.signupText}>Sign up</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "start",
-    marginVertical: 5,
-    paddingHorizontal: 15,
+  },
+  content: {
+    zIndex: 1,
+    padding: 20,
+  },
+  bg: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    zIndex: -1,
+  },
+  bgimgs1: {
+    width: 120,
+    height: 130,
+    position: "absolute",
+    top: 50,
+    right: -60,
+  },
+
+  bgimgs2: {
+    width: 120,
+    height: 130,
+    position: "absolute",
+    padding: 20,
+    left: -30,
+    top: 50,
+  },
+  bgimgs3: {
+    width: 130,
+    height: 150,
+    position: "absolute",
+    top: -40,
+    left: 150,
+  },
+  bgimgs4: {
+    width: 130,
+    height: 150,
+    position: "absolute",
+    bottom: -50,
+    right: -50,
+  },
+  bgimgs5: {
+    width: 100,
+    height: 130,
+    position: "absolute",
+    bottom: 0,
+    right: 130,
+  },
+  bgimgs6: {
+    width: 120,
+    height: 160,
+    position: "absolute",
+    bottom: -100,
+    left: -70,
   },
   image1: {
     width: 250,
@@ -255,11 +307,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     textAlign: "center",
     fontFamily: "Poppins",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   signupText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: "Poppins",
     fontWeight: "bold",
+  },
+  signupText1: {
+    fontSize: 18,
+    fontFamily: "Poppins",
   },
 });
 

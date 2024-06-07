@@ -46,7 +46,6 @@ function KidsTabNavigator({ route }) {
         name="Tasks"
         component={Tasks}
         initialParams={{ profile }}
-
         options={{
           tabBarIcon: ({ color, focused, size }) => {
             return (
@@ -61,24 +60,26 @@ function KidsTabNavigator({ route }) {
           },
         }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileTab}
-        initialParams={{ profile }}
-        options={{
-          tabBarIcon: ({ color, focused, size }) => {
-            return (
-              <View style={focused ? styles.activeIcon : null}>
-                <FontAwesome
-                  name={"user"}
-                  size={focused ? 40 : 30}
-                  color={color}
-                />
-              </View>
-            );
-          },
-        }}
-      />
+      {profile.role !== "parent" && (
+        <Tab.Screen
+          name="Profile"
+          component={ProfileTab}
+          initialParams={{ profile }}
+          options={{
+            tabBarIcon: ({ color, focused, size }) => {
+              return (
+                <View style={focused ? styles.activeIcon : null}>
+                  <FontAwesome
+                    name={"user"}
+                    size={focused ? 40 : 30}
+                    color={color}
+                  />
+                </View>
+              );
+            },
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 }

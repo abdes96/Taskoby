@@ -59,6 +59,13 @@ const Navigation = () => {
         ) : (
           <>
             <Stack.Screen
+              name="Index"
+              component={Login}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
               name="AddKidsScreen"
               component={AddKidsScreen}
               options={{
@@ -79,13 +86,7 @@ const Navigation = () => {
                 headerShown: false,
               }}
             />
-            <Stack.Screen
-              name="Index"
-              component={Login}
-              options={{
-                headerShown: false,
-              }}
-            />
+
             <Stack.Screen
               name="CreateFamilyScreen"
               component={CreateFamilyScreen}

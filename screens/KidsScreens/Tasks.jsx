@@ -19,30 +19,11 @@ import {
   collection,
   getDocs,
   onSnapshot,
+  getDoc,
 } from "firebase/firestore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
-const tasksData = [
-  {
-    category: "cleaning",
-    title: "Clean your room",
-    status: "To-do",
-    image: require("../../assets/clean.png"),
-  },
-  {
-    category: "Study",
-    title: "Do your math homework",
-    status: "Done",
-    image: require("../../assets/study.png"),
-  },
-  {
-    category: "Sport",
-    title: "Football tonight!",
-    time: "08:00 pm",
-    status: "To-do",
-    image: require("../../assets/sport.png"),
-  },
-];
+import TaskPopup from "./components/TaskPopup";
 
 const win = Dimensions.get("window");
 const ratio = win.width / 124;
@@ -53,30 +34,32 @@ const Tasks = ({ route }) => {
   const auth = getAuth();
   const user = auth.currentUser;
   const [selectedTab, setSelectedTab] = useState("Today");
-  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isMenuVisible, setMenuVisible] = useState(false);
-
+  const [isTaskModalVisible, setTaskModalVisible] = useState(false);
   const [selectedProfileTasks, setSelectedProfileTasks] = useState([]);
-
-  const fetchData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem("@family_data");
-      if (jsonValue != null) {
-        const data = JSON.parse(jsonValue);
-
-        return data;
-      }
-      return null;
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const handleAddTask = () => {
     setModalVisible(false);
+  };
+
+  const handleTaskClick = async (task) => {
+    const db = getFirestore();
+    const taskRef = doc(
+      db,
+      "users",
+      user.uid,
+      "profiles",
+      selectedProfile.id,
+      "tasks",
+      task.id
+    );
+    const taskSnapshot = await getDoc(taskRef);
+    setSelectedTask({ id: task.id, ...taskSnapshot.data() });
+    setTaskModalVisible(true);
   };
 
   useEffect(() => {
@@ -107,45 +90,43 @@ const Tasks = ({ route }) => {
   }, [user]);
 
   useEffect(() => {
-    if (profiles.length > 0 && !selectedProfile) {
+    if (profile.role === "parent" && profiles.length > 0 && !selectedProfile) {
       setSelectedProfile(profiles[0]);
+    } else if (profile.role === "child") {
+      setSelectedProfile(profile);
     }
-  }, [profiles]);
+  }, [profiles, profile.role]);
 
-  // tasks of selected profile
+  const fetchTasks = async () => {
+    if (selectedProfile) {
+      const db = getFirestore();
+      const profileRef = doc(
+        db,
+        "users",
+        user.uid,
+        "profiles",
+        selectedProfile.id
+      );
+      const tasksRef = collection(profileRef, "tasks");
+      const tasksSnapshot = await getDocs(tasksRef);
+      const tasksData = tasksSnapshot.docs.map((taskDoc) => ({
+        ...taskDoc.data(),
+        id: taskDoc.id,
+      }));
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      if (selectedProfile) {
-        const db = getFirestore();
-        const profileRef = doc(
-          db,
-          "users",
-          user.uid,
-          "profiles",
-          selectedProfile.id
-        );
-        const tasksRef = collection(profileRef, "tasks");
-        const tasksSnapshot = await getDocs(tasksRef);
-        const tasksData = tasksSnapshot.docs.map((taskDoc) => ({
-          ...taskDoc.data(),
-          id: taskDoc.id,
-        }));
-
-        setSelectedProfileTasks(tasksData);
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [selectedProfile]);
-
-  useEffect(() => {
-    fetchData().then((data) => {
-      setData(data);
+      setSelectedProfileTasks(tasksData);
       setLoading(false);
-    });
-  }, []);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchTasks();
+    }, [selectedProfile])
+  );
+
+
+
   if (loading) {
     return (
       <View>
@@ -168,6 +149,7 @@ const Tasks = ({ route }) => {
         selectedProfile={selectedProfile}
         allProfiles={profiles}
       />
+
       <SafeAreaView>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
@@ -252,7 +234,7 @@ const Tasks = ({ route }) => {
                   <View
                     style={[
                       styles.circleBackground,
-                      { backgroundColor: data[0].color },
+                      { backgroundColor: profile.color },
                     ]}
                   >
                     <Image
@@ -260,7 +242,7 @@ const Tasks = ({ route }) => {
                       style={styles.profileImage}
                     />
                   </View>
-                  <Text style={styles.profileName}>{data[0].firstName}</Text>
+                  <Text style={styles.profileName}>{profile.firstName}</Text>
                 </View>
               </View>
             )}
@@ -348,7 +330,7 @@ const Tasks = ({ route }) => {
                 yesterday.setDate(yesterday.getDate() - 1);
                 const isPastDue = task.dueDate.toDate() < yesterday;
                 return (
-                  <View
+                  <TouchableOpacity
                     key={index}
                     style={{
                       ...styles.taskCard,
@@ -358,6 +340,11 @@ const Tasks = ({ route }) => {
                           : isPastDue && task.status === "To-do"
                           ? "#ffcccb"
                           : "#EAF6FF",
+                    }}
+                    onPress={() => {
+                      if (profile.role === "child") {
+                        handleTaskClick(task);
+                      }
                     }}
                   >
                     <View style={styles.textTask}>
@@ -396,7 +383,7 @@ const Tasks = ({ route }) => {
 
                     <ImageBackground
                       source={
-                          task.category === "Cleaning"
+                        task.category === "Cleaning"
                           ? require("../../assets/clean.png")
                           : task.category === "Sport"
                           ? require("../../assets/sport.png")
@@ -407,10 +394,18 @@ const Tasks = ({ route }) => {
                       style={styles.taskImage}
                       resizeMode="contain"
                     />
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
           </View>
+          <TaskPopup
+            visible={isTaskModalVisible}
+            onRequestClose={() => setTaskModalVisible(false)}
+            task={selectedTask}
+            profile={profile}
+            setTaskModalVisible={setTaskModalVisible}
+            fetchTasks={fetchTasks}
+          />
         </ScrollView>
         <Modal
           animationType="slide"

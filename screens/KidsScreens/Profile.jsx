@@ -23,27 +23,7 @@ const ProfileScreen = ({ route }) => {
     lastYearTasks: 0,
   });
 
-  const [userData, setUserData] = useState({
-    name: "Jessica",
-    totalTasks: 30,
-    cleaningTasks: 10,
-    studyTasks: 10,
-    yearlyTasks: 603,
-    image: require("../../assets/jes.png"),
-  });
-
-  const [data, setData] = useState([
-    {
-      category: "cleaning",
-      count: userData.cleaningTasks,
-      image: require("../../assets/spong.png"),
-    },
-    {
-      category: "study",
-      count: userData.studyTasks,
-      image: require("../../assets/study.png"),
-    },
-  ]);
+  
 
   useEffect(() => {
     const fetchTasks = async () => {

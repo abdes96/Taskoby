@@ -19,16 +19,17 @@ import * as Notifications from "expo-notifications";
 const images = {
   dropdownIcon: require("../../../assets/dropdown.png"),
   sand: require("../../../assets/sand.png"),
+  camera: require("../../../assets/camera.png"),
 };
 
-const CustomDropdown = ({ value, setValue, options }) => {
+const CustomDropdown = ({ value, setValue, options, placeholder }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <View>
       <TouchableOpacity onPress={() => setModalVisible(true)}>
         <View style={styles.dropdown}>
-          <Text style={styles.dropdownText}>{value}</Text>
+          <Text style={styles.dropdownText}>{value || placeholder}</Text>
           <Image
             source={images.dropdownIcon}
             resizeMode="containe"
@@ -232,6 +233,7 @@ const TaskCreationModal = ({
               <View style={styles.modalInput}>
                 <Text style={styles.label}>Category</Text>
                 <CustomDropdown
+                  placeholder="Select a category"
                   value={newTask.category}
                   setValue={(value) => {
                     if (value !== "") {
@@ -341,7 +343,7 @@ const TaskCreationModal = ({
                       <Text style={styles.label3}>{newTask.time}</Text>
                     )}
                   </View>
-                  <ToggleButton
+                  <ToggleButton 
                     value={toggleValue}
                     onPress={(newState) => {
                       setToggleValue(newState);
@@ -373,6 +375,7 @@ const TaskCreationModal = ({
                           width: 26,
                           height: 26,
                           backgroundColor: "white",
+                          
                         }}
                       />
                     }
@@ -385,6 +388,15 @@ const TaskCreationModal = ({
                       width: 52,
                       height: 32,
                       radius: 25,
+                      shadowColor: "black",
+                      shadowOffset: {
+                        width: 6,
+                        height: 6,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 25,
+                      elevation: 5,
+                      
                     }}
                     thumbButton={{
                       activeBackgroundColor: "transparent",
@@ -402,14 +414,14 @@ const TaskCreationModal = ({
                   <DatePicker
                     options={{
                       backgroundColor: "#FFDFAC",
-                      textHeaderColor: "#000000",
-                      textDefaultColor: "#000000",
-                      selectedTextColor: "#ffff",
+                      textHeaderColor: "red",
+                      textDefaultColor: "black",
                       mainColor: "#BEACFF",
+                      textFontSize: 20,
+                      textHeaderFontSize: 30,
+                      selectedTextColor: "white",
                       defaultFont: "PoppinsBold",
                       headerFont: "PoppinsBold",
-                      textSecondaryColor: "black",
-                      borderColor: "transparent",
                     }}
                     style={{
                       padding: 5,
@@ -417,7 +429,7 @@ const TaskCreationModal = ({
                       backgroundColor: "#FFDFAC",
                     }}
                     mode="time"
-                    minuteInterval={3}
+                    minuteInterval={5}
                     onTimeChange={(selectedTime) =>
                       setNewTask({
                         ...newTask,
@@ -442,6 +454,8 @@ const TaskCreationModal = ({
               <View style={styles.modalInput}>
                 <View style={styles.Modaltoggle}>
                   <View style={styles.toggletitle}>
+                    <Image style={styles.camera} source={images.camera} />
+
                     <Text style={styles.label2}>Picture proof</Text>
                   </View>
                   <ToggleButton
@@ -482,6 +496,15 @@ const TaskCreationModal = ({
                       width: 52,
                       height: 32,
                       radius: 25,
+                      shadowColor: "black",
+                      shadowOffset: {
+                        width: 6,
+                        height: 6,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 25,
+                      elevation: 5,
+                      
                     }}
                     thumbButton={{
                       activeBackgroundColor: "transparent",
@@ -490,6 +513,7 @@ const TaskCreationModal = ({
                       borderWidth: 1,
                       height: 30,
                       width: 30,
+                      
                     }}
                   />
                 </View>
@@ -537,6 +561,15 @@ const TaskCreationModal = ({
                       width: 52,
                       height: 32,
                       radius: 25,
+                      shadowColor: "black",
+                      shadowOffset: {
+                        width: 6,
+                        height: 6,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 25,
+                      elevation: 5,
+                      
                     }}
                     thumbButton={{
                       activeBackgroundColor: "transparent",
@@ -633,13 +666,13 @@ const styles = {
     fontSize: 16,
   },
   buttonText: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: "Poppins",
     fontWeight: "bold",
     margin: 10,
   },
   Cancel: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: "Poppins",
     margin: 10,
     color: "red",
@@ -697,6 +730,11 @@ const styles = {
     height: 30,
     marginRight: 10,
   },
+  camera: {
+    width: 31,
+    height: 23,
+    marginRight: 10,
+  },
   label2: {
     fontSize: 18,
     fontFamily: "Poppins",
@@ -717,6 +755,7 @@ const styles = {
   dateButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 20,
   },
   dateButton: {
     paddingVertical: 10,

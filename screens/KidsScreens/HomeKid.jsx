@@ -108,14 +108,14 @@ const Homekid = ({ route }) => {
     <View style={styles.member}>
       <View style={styles.rankContainer}>
         <Text
-          style={[styles.rankText, item.id === "1" ? { color: "#FFD700" } : {}]}
+          style={[styles.rankText, index === 0 ? { color: "#FFD700" , fontSize: 60} : {}]}
         >
           {index + 1}
         </Text>
         <Text style={styles.memberName}>{item.firstName}</Text>
       </View>
       <View style={[styles.memberContainer, { backgroundColor: item.color }]}>
-        {item.id === "1" && (
+        {index === 0 && (
           <Image
             source={require("../../assets/first.png")}
             style={styles.extraImage}
@@ -144,7 +144,7 @@ const Homekid = ({ route }) => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text style={styles.headerTextFamily}>
-              <Text style={{ fontWeight: "bold" }}>Glazzers</Text> Family
+              <Text style={{ fontWeight: "bold" }}>{profile.lastName}</Text> Family
             </Text>
             <ScrollView
               horizontal
@@ -172,12 +172,7 @@ const Homekid = ({ route }) => {
               ))}
             </ScrollView>
           </View>
-          <View style={styles.important}>
-            <Text style={styles.headerText}>Important!</Text>
-            <View style={styles.noticeContainer}>
-              <Text style={styles.noticeText}>Movie night is today!</Text>
-            </View>
-          </View>
+         
           <View style={styles.classement}>
             <Text style={styles.sectionTitle}>
               Most tasks completed this month!
@@ -335,11 +330,11 @@ const styles = StyleSheet.create({
   rankContainer: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     marginRight: 15,
   },
   rankText: {
-    fontSize: 60,
+    fontSize: 45,
     fontWeight: "bold",
   },
   memberImage: {
