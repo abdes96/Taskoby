@@ -2,10 +2,12 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome6 } from '@expo/vector-icons';
 import ProfileTab from "./Profile";
 import Homekid from "./HomeKid";
 import { Platform, View, StyleSheet } from "react-native";
 import Tasks from "./Tasks";
+import Rewards from "./Rewards";
 
 const Tab = createBottomTabNavigator();
 
@@ -60,6 +62,24 @@ function KidsTabNavigator({ route }) {
           },
         }}
       />
+      <Tab.Screen
+        name="Rewards"
+        component={Rewards}
+        initialParams={{ profile }}
+        options={{
+          tabBarIcon: ({ color, focused, size }) => {
+            return (
+              <View style={focused ? styles.activeIcon : null}>
+                <FontAwesome6
+                    name="coins"
+                    size={focused ? 40 : 30}
+                    color= {color}
+                  />
+              </View>
+            );
+          },
+        }}
+      />
       {profile.role !== "parent" && (
         <Tab.Screen
           name="Profile"
@@ -79,7 +99,9 @@ function KidsTabNavigator({ route }) {
             },
           }}
         />
+        
       )}
+      
     </Tab.Navigator>
   );
 }

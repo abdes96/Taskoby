@@ -343,7 +343,7 @@ const TaskCreationModal = ({
                       <Text style={styles.label3}>{newTask.time}</Text>
                     )}
                   </View>
-                  <ToggleButton 
+                  <ToggleButton
                     value={toggleValue}
                     onPress={(newState) => {
                       setToggleValue(newState);
@@ -375,7 +375,6 @@ const TaskCreationModal = ({
                           width: 26,
                           height: 26,
                           backgroundColor: "white",
-                          
                         }}
                       />
                     }
@@ -396,7 +395,6 @@ const TaskCreationModal = ({
                       shadowOpacity: 0.25,
                       shadowRadius: 25,
                       elevation: 5,
-                      
                     }}
                     thumbButton={{
                       activeBackgroundColor: "transparent",
@@ -504,7 +502,6 @@ const TaskCreationModal = ({
                       shadowOpacity: 0.25,
                       shadowRadius: 25,
                       elevation: 5,
-                      
                     }}
                     thumbButton={{
                       activeBackgroundColor: "transparent",
@@ -513,7 +510,6 @@ const TaskCreationModal = ({
                       borderWidth: 1,
                       height: 30,
                       width: 30,
-                      
                     }}
                   />
                 </View>
@@ -569,7 +565,6 @@ const TaskCreationModal = ({
                       shadowOpacity: 0.25,
                       shadowRadius: 25,
                       elevation: 5,
-                      
                     }}
                     thumbButton={{
                       activeBackgroundColor: "transparent",
@@ -667,8 +662,8 @@ const styles = {
   },
   buttonText: {
     fontSize: 20,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
+
     margin: 10,
   },
   Cancel: {
@@ -737,19 +732,18 @@ const styles = {
   },
   label2: {
     fontSize: 18,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   label3: {
     fontSize: 18,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
+
     marginLeft: 50,
   },
   label: {
     fontSize: 18,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
+
     marginBottom: 10,
   },
   dateButtons: {
@@ -758,7 +752,6 @@ const styles = {
     marginBottom: 20,
   },
   dateButton: {
-    paddingVertical: 10,
     borderRadius: 15,
     shadowColor: "#030002",
     shadowOffset: {
@@ -772,9 +765,9 @@ const styles = {
   dateButtonText: {
     fontSize: 18,
     color: "black",
-    fontFamily: "Poppins",
-    paddingHorizontal: 25,
-    fontWeight: "bold",
+    paddingVertical : 10,
+    paddingHorizontal: 20,
+    fontFamily: "PoppinsBold",
   },
   AddTaskModalButton: {
     paddingVertical: 10,

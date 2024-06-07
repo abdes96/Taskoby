@@ -59,7 +59,6 @@ const Homekid = ({ route }) => {
     try {
       const jsonValue = JSON.stringify(value);
       await AsyncStorage.setItem("@family_data", jsonValue);
-    
     } catch (e) {
       console.log(e);
     }
@@ -98,7 +97,7 @@ const Homekid = ({ route }) => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigation.replace("Login"); 
+      navigation.replace("Login");
     } catch (error) {
       console.error("Error logging out: ", error);
     }
@@ -108,10 +107,11 @@ const Homekid = ({ route }) => {
     <View style={styles.member}>
       <View style={styles.rankContainer}>
         <Text
-          style={[styles.rankText, index === 0 ? { color: "#FFD700" , fontSize: 60} : {}]}
-        >
-          {index + 1}
-        </Text>
+          style={[
+            styles.rankText,
+            index === 0 ? { color: "#FFD700", fontSize: 60  } : {},
+          ]}
+        >{index + 1}</Text>
         <Text style={styles.memberName}>{item.firstName}</Text>
       </View>
       <View style={[styles.memberContainer, { backgroundColor: item.color }]}>
@@ -144,7 +144,10 @@ const Homekid = ({ route }) => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text style={styles.headerTextFamily}>
-              <Text style={{ fontWeight: "bold" }}>{profile.lastName}</Text> Family
+              <Text style={{ fontFamily: "PoppinsBold" }}>
+                {profile.lastName}
+              </Text>
+              Family
             </Text>
             <ScrollView
               horizontal
@@ -172,7 +175,7 @@ const Homekid = ({ route }) => {
               ))}
             </ScrollView>
           </View>
-         
+
           <View style={styles.classement}>
             <Text style={styles.sectionTitle}>
               Most tasks completed this month!
@@ -212,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     textAlign: "left",
     paddingBottom: 5,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
 
   headerTextFamily: {
@@ -265,12 +268,12 @@ const styles = StyleSheet.create({
   profileName: {
     marginTop: 5,
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   sectionTitle: {
-    fontSize: 30,
+    fontSize: 25,
     padding: 10,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
     textAlign: "center",
     borderBottomColor: "#000",
     borderBottomWidth: 3,
@@ -299,7 +302,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 10,
     borderRadius: 10,
-    marginVertical: 5,
+    marginBottom: 5,
+    marginTop: -15,
     borderWidth: 1,
     borderColor: "black",
     alignItems: "center",
@@ -318,7 +322,7 @@ const styles = StyleSheet.create({
   },
   recordtext: {
     fontSize: 48,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   member: {
     flexDirection: "column",
@@ -328,14 +332,14 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   rankContainer: {
-    display: "flex",
     flexDirection: "row",
     alignItems: "baseline",
     marginRight: 15,
   },
   rankText: {
+    paddingLeft: 10,
     fontSize: 45,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   memberImage: {
     width: 70,
@@ -348,8 +352,9 @@ const styles = StyleSheet.create({
   },
   memberName: {
     fontSize: 25,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
     marginLeft: 15,
+    
   },
   tasksText: {
     display: "flex",

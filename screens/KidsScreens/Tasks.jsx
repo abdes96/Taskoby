@@ -125,8 +125,6 @@ const Tasks = ({ route }) => {
     }, [selectedProfile])
   );
 
-
-
   if (loading) {
     return (
       <View>
@@ -483,8 +481,7 @@ const styles = StyleSheet.create({
   },
   tasks: {
     fontSize: 32,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
     textAlign: "left",
     padding: 15,
     paddingLeft: 20,
@@ -522,15 +519,13 @@ const styles = StyleSheet.create({
   },
   SelectedProfileName: {
     fontSize: 20,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
     textAlign: "left",
     marginTop: 20,
   },
   btnText: {
     fontSize: 20,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
     textAlign: "left",
     marginLeft: 10,
   },
@@ -595,8 +590,7 @@ const styles = StyleSheet.create({
   profileNameProfiles: {
     marginTop: 5,
     fontSize: 26,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
   },
 
   profileImage: {
@@ -620,8 +614,8 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 50,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
+
     color: "#000000",
   },
   noticeContainer: {
@@ -632,7 +626,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   important: {
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
     fontSize: 16,
     color: "#000000",
   },
@@ -648,7 +642,7 @@ const styles = StyleSheet.create({
   },
   tab: {
     padding: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     backgroundColor: "#EDE8FF",
     borderRadius: 15,
     alignItems: "center",
@@ -663,7 +657,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tabSelected: {
-    padding: 10,
+    padding: 5,
     paddingHorizontal: 30,
     backgroundColor: "#BEACFF",
     borderRadius: 15,
@@ -697,8 +691,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tabText: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontFamily: "PoppinsBold",
     color: "#000000",
   },
   menuIcon: {
@@ -734,8 +728,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 24,
     color: "#000000",
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
     width: 200,
     paddingBottom: 15,
   },
@@ -805,15 +798,13 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 2,
     margin: 10,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   modalText: {
     fontSize: 20,
     color: "#000000",
     textAlign: "center",
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   closeButton: {
     backgroundColor: "#EDE8FF",
@@ -828,8 +819,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#000000",
     textAlign: "center",
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
 });
 

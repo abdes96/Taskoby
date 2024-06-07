@@ -40,7 +40,8 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-modern-datepicker": "^1.0.0-beta.91",
     "react-native-swiper": "^1.6.0",
-    "react-native-toggle-element": "^2.0.1"
+    "react-native-toggle-element": "^2.0.1",
+    "expo-camera": "~15.0.10"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
