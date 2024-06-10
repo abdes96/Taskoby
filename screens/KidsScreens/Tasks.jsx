@@ -297,7 +297,6 @@ const Tasks = ({ route }) => {
                     );
                   }
 
-                  // If the selected tab is "Tomorrow", return tasks due tomorrow
                   if (selectedTab === "Tomorrow") {
                     return (
                       taskDate.getDate() === tomorrow.getDate() &&
@@ -322,7 +321,9 @@ const Tasks = ({ route }) => {
                   if (selectedTab === "All") {
                     return task.status === "To-do";
                   }
-
+                  if (selectedTab === "Need Approval") {
+                    return task.status === "Pending Review";
+                  }
                   return true;
                 })
                 .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
@@ -437,6 +438,19 @@ const Tasks = ({ route }) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={
+                  selectedTab === "Need Approval"
+                    ? styles.tabSelected
+                    : styles.modalButton
+                }
+                onPress={() => {
+                  setSelectedTab("Need Approval");
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalText}>Need Approval</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={
                   selectedTab === "Next 7 Days"
                     ? styles.tabSelected
                     : styles.modalButton
@@ -538,6 +552,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   addIcon: {
+    
     width: 50,
     height: 50,
   },

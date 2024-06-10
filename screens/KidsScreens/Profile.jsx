@@ -111,7 +111,7 @@ const ProfileScreen = ({ route }) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View
-            style={[styles.bgCircle, { backgroundColor: profile.bgColor }]}
+            style={[styles.bgCircle, { backgroundColor: profile.bgColor2 }]}
           ></View>
           <View style={styles.profile}>
             <View style={styles.name}>

@@ -89,6 +89,7 @@ const TaskCreationModal = ({
     profile: null,
     specificRole: null,
     status: "To-do",
+    reward: 0,
   });
 
   const handleAddTask = async () => {
@@ -169,7 +170,7 @@ const TaskCreationModal = ({
         taskForEveryone: false,
         profile: null,
         specificRole: null, 
-        status: "To-do",
+        status: "Pending Review",
       });
       console.log("Task added successfully!" + taskWithProfile);
       onClose();
@@ -255,6 +256,18 @@ const TaskCreationModal = ({
                   ]}
                 />
               </View>
+              <View style={styles.modalInput}>
+              <Text style={styles.label}>Reward</Text>
+              <TextInput
+                style={styles.modalText}
+                placeholder="Enter reward"
+                keyboardType="numeric"
+                value={(newTask.reward)}
+                onChangeText={(text) =>
+                  setNewTask({ ...newTask, reward: Number(text) })
+                }
+              />
+            </View>
               {isDatePickerVisible && (
                 <View style={styles.modalInput}>
                   <DatePicker

@@ -29,7 +29,7 @@ import {
 } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 const TaskPopup = ({
   visible,
   onRequestClose,
@@ -127,65 +127,127 @@ const TaskPopup = ({
     setNote("");
   };
   const markTaskAsDone = async () => {
-    if (
-      task.pictureProof &&
-      !image &&
-      profile.role === "child" &&
-      task.status !== "Done"
-    ) {
-      alert("Task requires a picture proof and is not done yet!");
-      return;
+    if (profile.role === "child") {
+      if (
+        task.pictureProof &&
+        !image &&
+        profile.role === "child" &&
+        task.status !== "Pending Review"
+      ) {
+        alert("Task requires a picture proof and is not done yet!");
+        return;
+      }
+
+      const taskRef = doc(
+        db,
+        `users/${user.uid}/profiles/${profile.id}/tasks/${task.id}`
+      );
+
+      const update = {
+        status: "Pending Review",
+      };
+
+      if (image) {
+        update.imageUrl = image;
+      }
+
+      await updateDoc(taskRef, update);
+
+      const taskSnapshot = await getDoc(taskRef);
+      const taskData = taskSnapshot.data();
+      setUpdatedTask({ id: task.id, ...taskData });
+      fetchTasks();
+      setTaskModalVisible(false);
+
+      const tokensRef = collection(db, `users/${user.uid}/tokens`);
+      const tokensSnapshot = await getDocs(tokensRef);
+      const tokens = tokensSnapshot.docs.map((doc) => doc.data().expoPushToken);
+
+      for (let token of tokens) {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "accept-encoding": "gzip, deflate",
+            host: "exp.host",
+          },
+          body: JSON.stringify({
+            to: token,
+            title: "Task Completed",
+            body: `Task: "${taskData.title}" has been done by ${profile.firstName}.`,
+            data: { extraData: "Some extra data" },
+          }),
+        });
+      }
+      setImage(null);
     }
 
-    const taskRef = doc(
-      db,
-      `users/${user.uid}/profiles/${profile.id}/tasks/${task.id}`
-    );
+    // mark task as done for parents
+    if (profile.role === "parent") {
+      const taskRef = doc(
+        db,
+        `users/${user.uid}/profiles/${selectedProfile.id}/tasks/${task.id}`
+      );
 
-    const update = {
-      status: "Done",
-    };
+      const taskSnapshot = await getDoc(taskRef);
+      const taskData = taskSnapshot.data();
+      if (taskData.status === "Done") {
+        alert("Task is already marked as done.");
+        return;
+      }
+      const update = {
+        status: "Done",
+      };
+      await updateDoc(taskRef, update);
 
-    if (image) {
-      update.imageUrl = image;
-    }
+      setUpdatedTask({ id: task.id, ...taskData, status: "Done" });
+      fetchTasks();
+      setTaskModalVisible(false);
 
-    await updateDoc(taskRef, update);
+      // Give coins
+      const profileRef = doc(
+        db,
+        `users/${user.uid}/profiles/${selectedProfile.id}`
+      );
+      const profileSnapshot = await getDoc(profileRef);
+      const profileData = profileSnapshot.data();
 
-    const taskSnapshot = await getDoc(taskRef);
-    const taskData = taskSnapshot.data();
-    setUpdatedTask({ id: task.id, ...taskData });
-    fetchTasks();
-    setTaskModalVisible(false);
-
-    const tokensRef = collection(db, `users/${user.uid}/tokens`);
-    const tokensSnapshot = await getDocs(tokensRef);
-    const tokens = tokensSnapshot.docs.map((doc) => doc.data().expoPushToken);
-
-    for (let token of tokens) {
-      await fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "accept-encoding": "gzip, deflate",
-          host: "exp.host",
-        },
-        body: JSON.stringify({
-          to: token,
-          title: "Task Completed",
-          body: `Task: "${taskData.title}" has been done by ${profile.firstName}.`,
-          data: { extraData: "Some extra data" },
-        }),
+      await updateDoc(profileRef, {
+        coins: (profileData.coins || 0) + taskData.reward,
       });
+
+      // Send notification
+      const tokensRef = collection(db, `users/${user.uid}/tokens`);
+      const tokensSnapshot = await getDocs(tokensRef);
+      const tokens = tokensSnapshot.docs.map((doc) => doc.data().expoPushToken);
+
+      for (let token of tokens) {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "accept-encoding": "gzip, deflate",
+            host: "exp.host",
+          },
+          body: JSON.stringify({
+            to: token,
+            title: "Task Completed",
+            body: `${selectedProfile.firstName} has been rewarded with ${
+              taskData.reward
+            } coins for completing the task: ${taskData.title}! Great job! 🎉`,
+            data: { extraData: "Some extra data" },
+          }),
+        });
+      }
     }
-    setImage(null);
   };
 
   const handleDelete = async () => {
     setImage(null);
 
-    if (!updatedTask.imageUrl) {
+    if (!updatedTask.imageUrl && !image) {
       alert("No image to delete!");
       return;
     }
@@ -214,6 +276,21 @@ const TaskPopup = ({
     }
   };
 
+  const handleNotApproved = async () => {
+    const taskRef = doc(
+      db,
+      `users/${user.uid}/profiles/${selectedProfile.id}/tasks/${task.id}`
+    );
+
+    const update = {
+      status: "Not Approved",
+    };
+
+    await updateDoc(taskRef, update);
+
+    setUpdatedTask({ id: task.id, status: "Not Approved" });
+    fetchTasks();
+  };
   if (!updatedTask) return null;
 
   return (
@@ -229,15 +306,6 @@ const TaskPopup = ({
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.topmodal}>
-            <TouchableOpacity onPress={onRequestClose}>
-              <Ionicons
-                name="arrow-undo-circle-sharp"
-                size={50}
-                color="#BEACFF"
-              />
-            </TouchableOpacity>
-          </View>
           <View
             style={{
               ...styles.bgCircle,
@@ -248,8 +316,10 @@ const TaskPopup = ({
             }}
           >
             <View style={styles.header}>
+              <TouchableOpacity style={styles.back} onPress={onRequestClose}>
+                <Entypo name="chevron-left" size={50} color="#7859E9" />
+              </TouchableOpacity>
               <Text style={styles.taskTitle}>{updatedTask.title}</Text>
-
               <Text style={styles.taskCategory}>{updatedTask.category}</Text>
               <Image
                 source={
@@ -311,7 +381,12 @@ const TaskPopup = ({
                 <>
                   <View style={styles.UpdatepictureProofButton}>
                     <Text style={styles.buttonTextPic}>
-                      {profile.role === "child" && updatedTask.status === "Done"
+                      {profile.role === "parent"
+                        ? "Picture proof"
+                        : (profile.role === "child" &&
+                            updatedTask.status === "Done") ||
+                          (profile.role === "child" &&
+                            updatedTask.status === "Pending Review")
                         ? "Update picture proof"
                         : "Add picture proof"}
                     </Text>
@@ -337,16 +412,21 @@ const TaskPopup = ({
                   </View>
                 </>
               ) : (
-                <TouchableOpacity
-                  style={styles.pictureProofButton}
-                  onPress={takePicture}
-                >
-                  <Text style={styles.buttonTextPic}>
-                    {profile.role === "child" && updatedTask.status === "Done"
-                      ? "Update picture proof"
-                      : "Add picture proof"}
-                  </Text>
-                </TouchableOpacity>
+                profile.role === "child" && (
+                  <TouchableOpacity
+                    style={styles.pictureProofButton}
+                    onPress={takePicture}
+                  >
+                    <Text style={styles.buttonTextPic}>
+                      {(profile.role === "child" &&
+                        updatedTask.status === "Done") ||
+                      (profile.role === "child" &&
+                        updatedTask.status === "Pending Review")
+                        ? "Update picture proof"
+                        : "Add picture proof"}
+                    </Text>
+                  </TouchableOpacity>
+                )
               )}
               {isUploading && <Text>Uploading...</Text>}
             </>
@@ -357,11 +437,29 @@ const TaskPopup = ({
               onPress={markTaskAsDone}
             >
               <Text style={styles.buttonText}>
-                {profile.role === "child" && updatedTask.status === "Done"
+                {(profile.role === "child" && updatedTask.status === "Done") ||
+                (profile.role === "child" &&
+                  updatedTask.status === "Pending Review")
                   ? "Update this task"
                   : "Mark as done"}
               </Text>
             </TouchableOpacity>
+          )}
+          {profile.role === "parent" && (
+            <>
+              <TouchableOpacity
+                style={styles.redoButton}
+                onPress={handleNotApproved}
+              >
+                <Text style={styles.buttonTextPic}>Ask to redo the task ?</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.doneButton}
+                onPress={markTaskAsDone}
+              >
+                <Text style={styles.buttonText}>Mark as done</Text>
+              </TouchableOpacity>
+            </>
           )}
         </ScrollView>
       </View>
@@ -394,21 +492,7 @@ const styles = StyleSheet.create({
     top: -200,
     alignItems: "center",
   },
-  Cancel: {
-    fontSize: 20,
-    fontFamily: "Poppins",
-    margin: 10,
-    color: "red",
-  },
-  topmodal: {
-    position: "absolute",
-    top: 22,
-    zIndex: 2,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-  },
+
   statusText: {
     fontSize: 20,
     fontFamily: "Poppins",
@@ -420,6 +504,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 2,
     marginTop: "38%",
+  },
+  back: {
+    position: "absolute",
+    left: -60,
+    top: 5,
   },
 
   taskImage: {
@@ -433,6 +522,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     textAlign: "center",
     fontFamily: "PoppinsBold",
+    maxWidth: 300,
   },
   taskCategory: {
     fontSize: 24,
@@ -529,6 +619,24 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 10,
     marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    elevation: 5,
+    borderWidth: 1,
+    marginBottom: 50,
+  },
+  redoButton: {
+    backgroundColor: "#FFDFAC",
+    padding: 20,
+    paddingVertical: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
