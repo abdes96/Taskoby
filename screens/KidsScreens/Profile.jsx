@@ -7,10 +7,13 @@ import {
   ScrollView,
   SafeAreaView,
   Dimensions,
+  Platform,
+  StatusBar,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, collection, getDocs, doc } from "firebase/firestore";
 import { auth } from "../../firebaseConfig";
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 const ProfileScreen = ({ route }) => {
   const { profile } = route.params;
@@ -22,8 +25,6 @@ const ProfileScreen = ({ route }) => {
     tasksByCategory: [],
     lastYearTasks: 0,
   });
-
-  
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -56,6 +57,7 @@ const ProfileScreen = ({ route }) => {
 
     const filtered = tasks.filter(
       (task) =>
+        task.dueDate &&
         task.dueDate.toDate().getFullYear() === currentYear &&
         task.status === "Done"
     );
@@ -64,12 +66,14 @@ const ProfileScreen = ({ route }) => {
 
     const lastYearTasks = tasks.filter(
       (task) =>
+        task.dueDate &&
         task.dueDate.toDate().getFullYear() === currentYear - 1 &&
         task.status === "Done"
     ).length;
 
     const thisMonthTasks = tasks.filter(
       (task) =>
+        task.dueDate &&
         task.dueDate.toDate().getMonth() === currentMonth &&
         task.dueDate.toDate().getFullYear() === currentYear &&
         task.status === "Done"
@@ -102,10 +106,12 @@ const ProfileScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" />
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View
-            style={[styles.bgCircle, { backgroundColor: profile.color }]}
+            style={[styles.bgCircle, { backgroundColor: profile.bgColor }]}
           ></View>
           <View style={styles.profile}>
             <View style={styles.name}>
@@ -118,7 +124,6 @@ const ProfileScreen = ({ route }) => {
             />
           </View>
         </View>
-
         <View style={styles.section}>
           <View style={styles.tasksContainer}>
             <View style={styles.taskmonth}>
@@ -132,7 +137,6 @@ const ProfileScreen = ({ route }) => {
             />
           </View>
         </View>
-
         <View style={styles.section1}>
           <Text style={styles.sectionTitle2}>Tasks</Text>
           <View style={styles.tasksBreakdown}>
@@ -168,7 +172,6 @@ const ProfileScreen = ({ route }) => {
             </ScrollView>
           </View>
         </View>
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>This year</Text>
           <View style={styles.yearlyTasksContainer}>
@@ -201,12 +204,16 @@ const ProfileScreen = ({ route }) => {
     </SafeAreaView>
   );
 };
+const statusBarHeight = Platform.OS === "ios" ? -getStatusBarHeight() : 0;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+    justifyContent: "center",
     fontFamily: "Poppins",
+    height: "100%",
+    marginTop: statusBarHeight,
   },
   bgCircle: {
     position: "absolute",
@@ -241,14 +248,13 @@ const styles = StyleSheet.create({
   },
   familyName: {
     fontSize: 24,
+    fontFamily: "Poppins",
     color: "white",
     textAlign: "left",
-    marginLeft: 5,
   },
   profileName: {
     fontSize: 48,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
     color: "white",
     textAlign: "left",
   },
@@ -262,13 +268,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     marginVertical: 10,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
   sectionTitle2: {
     fontSize: 18,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
+
     paddingLeft: 20,
     marginVertical: 10,
   },
@@ -287,14 +292,6 @@ const styles = StyleSheet.create({
     zIndex: 999,
     borderWidth: 1,
     height: 175,
-    shadowColor: "#030002",
-    shadowOffset: {
-      width: 6,
-      height: 6,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 100,
-    elevation: 5,
   },
   taskmonth: {
     flexDirection: "column",
@@ -302,10 +299,9 @@ const styles = StyleSheet.create({
   },
   tasksCount: {
     fontSize: 40,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
     marginRight: 10,
     marginBottom: 15,
-    fontFamily: "Poppins",
   },
   tasksImage: {
     position: "absolute",
@@ -355,14 +351,14 @@ const styles = StyleSheet.create({
   category: {
     fontSize: 18,
     width: "100%",
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
+
     textAlign: "left",
   },
   taskCount: {
     fontSize: 50,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
+
     textAlign: "left",
   },
   counter: {

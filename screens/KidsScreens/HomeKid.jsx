@@ -12,45 +12,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 
-const familyData = [
-  {
-    id: "1",
-    name: "Jessica",
-    image: require("../../assets/jes.png"),
-    tasks: 30,
-    color: "#EE6A7D",
-    color2: "#FFD700",
-  },
-  {
-    id: "2",
-    name: "Jhon",
-    image: require("../../assets/john.png"),
-    tasks: 28,
-    color: "#FFC098",
-    color2: "#FFC098",
-  },
-  {
-    id: "3",
-    name: "Dad",
-    image: require("../../assets/dad.png"),
-    tasks: 20,
-    color: "#B0D9DC",
-    color2: "#B0D9DC",
-  },
-  {
-    id: "4",
-    name: "Mom",
-    image: require("../../assets/mom.png"),
-    tasks: 15,
-    color: "#F9C3BE",
-    color2: "#CA9DDA",
-  },
-];
-
 const Homekid = ({ route }) => {
   const { profile } = route.params;
   const [profiles, setProfiles] = useState([]);
   const [childs, setChilds] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -66,6 +32,8 @@ const Homekid = ({ route }) => {
 
   useEffect(() => {
     const fetchProfiles = async () => {
+      setIsLoading(true);
+
       const db = getFirestore();
       const userRef = doc(db, "users", user.uid);
       const profilesRef = collection(userRef, "profiles");
@@ -89,66 +57,117 @@ const Homekid = ({ route }) => {
       setChilds(childProfiles);
       setProfiles(profilesData);
       storeData(profilesData);
+      setIsLoading(false);
     };
 
     fetchProfiles();
   }, [user]);
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Image source={require("../../assets/loading.png")} />
+      </View>
+    );
+  }
+  const getMostCommonCategory = (tasks) => {
+    const categoryCounts = tasks.reduce((counts, task) => {
+      counts[task.category] = (counts[task.category] || 0) + 1;
+      return counts;
+    }, {});
+
+    let mostCommonCategory = null;
+    let maxCount = 0;
+    let currentMonthCount = 0;
+    const currentMonth = new Date().getMonth();
+    for (const [category, count] of Object.entries(categoryCounts)) {
+      const currentMonthCategoryCount = tasks.filter(
+        (task) =>
+          task.category === category &&
+          task.dueDate.toDate().getMonth() === currentMonth
+      ).length;
+      if (count > maxCount) {
+        mostCommonCategory = category;
+        maxCount = count;
+        currentMonthCount = currentMonthCategoryCount;
+      }
+    }
+
+    return { mostCommonCategory, maxCount, currentMonthCount };
+  };
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigation.replace("Login");
     } catch (error) {
       console.error("Error logging out: ", error);
     }
   };
 
-  const renderFamilyMember = ({ item, index }) => (
-    <View style={styles.member}>
-      <View style={styles.rankContainer}>
-        <Text
-          style={[
-            styles.rankText,
-            index === 0 ? { color: "#FFD700", fontSize: 60  } : {},
-          ]}
-        >{index + 1}</Text>
-        <Text style={styles.memberName}>{item.firstName}</Text>
-      </View>
-      <View style={[styles.memberContainer, { backgroundColor: item.color }]}>
-        {index === 0 && (
-          <Image
-            source={require("../../assets/first.png")}
-            style={styles.extraImage}
-          />
-        )}
-        <Image source={{ uri: item.avatarUrl }} style={styles.memberImage} />
-        <View style={styles.detailsContainer}>
-          <View style={styles.Record}>
-            <Text>
-              <Text style={styles.recordtext}>{item.numTasks}</Text>
-            </Text>
-          </View>
-          <View>
-            <Text style={styles.tasksText}>
-              At least 10 homeworks completed this month.
-            </Text>
+  const renderFamilyMember = ({ item, index }) => {
+    const { mostCommonCategory, maxCount, currentMonthCount } =
+      getMostCommonCategory(item.tasks);
+    console.log(
+      `Most common category: ${mostCommonCategory}, Count: ${maxCount}, Current month count: ${currentMonthCount}`
+    );
+
+    return (
+      <View style={styles.member}>
+        <View style={styles.rankContainer}>
+          <Text
+            style={[
+              styles.rankText,
+              index === 0 ? { color: "#FFD700", fontSize: 60 } : {},
+            ]}
+          >
+            {index + 1}
+          </Text>
+          <Text style={styles.memberName}>{item.firstName}</Text>
+        </View>
+        <View
+          style={[styles.memberContainer, { backgroundColor: item.bgColor2 }]}
+        >
+          {index === 0 && (
+            <Image
+              source={require("../../assets/first.png")}
+              style={styles.extraImage}
+            />
+          )}
+          <Image source={{ uri: item.avatarUrl }} style={styles.memberImage} />
+          <View style={styles.detailsContainer}>
+            <View style={styles.Record}>
+              <Text>
+                <Text style={styles.recordtext}>{item.numTasks}</Text>
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.tasksText}>
+                {currentMonthCount && mostCommonCategory
+                  ? `At least ${currentMonthCount} ${mostCommonCategory} tasks completed this month.`
+                  : "This is a new profile ! No tasks completed yet."}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
       <SafeAreaView>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Text style={styles.headerTextFamily}>
-              <Text style={{ fontFamily: "PoppinsBold" }}>
+            <View style={styles.headerTextFamily}>
+              <Text style={{ fontFamily: "PoppinsBold", fontSize: 24 }}>
                 {profile.lastName}
               </Text>
-              Family
-            </Text>
+
+              <Text style={{ fontFamily: "Poppins", fontSize: 24 }}>
+                {" "}
+                Family
+              </Text>
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -175,7 +194,6 @@ const Homekid = ({ route }) => {
               ))}
             </ScrollView>
           </View>
-
           <View style={styles.classement}>
             <Text style={styles.sectionTitle}>
               Most tasks completed this month!
@@ -219,10 +237,11 @@ const styles = StyleSheet.create({
   },
 
   headerTextFamily: {
-    fontSize: 24,
     textAlign: "left",
     paddingLeft: 20,
     paddingRight: 20,
+    flexDirection: "row",
+    alignItems: "baseline",
   },
   header: {
     marginTop: 50,
@@ -354,7 +373,6 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontFamily: "PoppinsBold",
     marginLeft: 15,
-    
   },
   tasksText: {
     display: "flex",

@@ -72,6 +72,7 @@ const TaskCreationModal = ({
   onAddTask,
   selectedProfile,
   allProfiles,
+  profile,
 }) => {
   const [toggleValue, setToggleValue] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
@@ -86,10 +87,12 @@ const TaskCreationModal = ({
     pictureProof: false,
     taskForEveryone: false,
     profile: null,
+    specificRole: null,
     status: "To-do",
   });
 
   const handleAddTask = async () => {
+    
     if (!newTask.title) {
       alert("Title is required!");
       return;
@@ -105,20 +108,20 @@ const TaskCreationModal = ({
       return;
     }
 
-    const taskWithProfile = { ...newTask };
+    const taskWithProfile = { ...newTask , specificRole: profile.specificRole};
 
     try {
       const auth = getAuth();
       const user = auth.currentUser;
-      console.log(user);
 
       if (newTask.taskForEveryone) {
-        for (let profile of allProfiles) {
+        for (let profilechild of allProfiles) {
+          const specificRole = profile.specificRole;
           const tasksRef = collection(
             db,
-            `users/${user.uid}/profiles/${profile.id}/tasks`
+            `users/${user.uid}/profiles/${profilechild.id}/tasks`
           );
-          await addDoc(tasksRef, taskWithProfile);
+        await addDoc(tasksRef, { ...taskWithProfile, specificRole: specificRole });
         }
 
         console.log("Task added successfully to all profiles!");
@@ -127,7 +130,7 @@ const TaskCreationModal = ({
           db,
           `users/${user.uid}/profiles/${selectedProfile.id}/tasks`
         );
-        await addDoc(tasksRef, taskWithProfile);
+        await addDoc(tasksRef, { ...taskWithProfile, specificRole: profile.specificRole });
 
         console.log("Task added successfully!");
       }
@@ -165,7 +168,8 @@ const TaskCreationModal = ({
         pictureProof: false,
         taskForEveryone: false,
         profile: null,
-        status: "pending",
+        specificRole: null, 
+        status: "To-do",
       });
       console.log("Task added successfully!" + taskWithProfile);
       onClose();
@@ -209,7 +213,7 @@ const TaskCreationModal = ({
         <ScrollView>
           <View style={styles.modalView}>
             <View style={styles.topmodal}>
-              <TouchableOpacity onPress={handleAddTask}>
+              <TouchableOpacity >
                 <Text style={styles.buttonText}>Add Task</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={onClose}>
@@ -599,6 +603,7 @@ const styles = {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   modalView: {
     backgroundColor: "#FFFFFF",
@@ -770,7 +775,6 @@ const styles = {
     fontFamily: "PoppinsBold",
   },
   AddTaskModalButton: {
-    paddingVertical: 10,
     borderRadius: 15,
     backgroundColor: "#EDE8FF",
     borderWidth: 1,

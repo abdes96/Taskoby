@@ -8,7 +8,7 @@ import Signup from "../screens/ParentScreens/Signup";
 import CreateFamilyScreen from "../screens/ParentScreens/CreateFamilyScreen";
 import AddKidsScreen from "../screens/ParentScreens/AddKidsScreen";
 import ChooseProfile from "../screens/ChooseProfile";
-import KidsTabNavigator from "../screens/KidsScreens/KidsTabNavigator";
+import KidsTabNavigator from "../screens/KidsScreens/TabNavigator";
 import Login from "../screens/Login";
 
 const Stack = createStackNavigator();
@@ -36,9 +36,7 @@ const Navigation = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={user ? "ChooseProfileScreen" : "Index"}
-      >
+      <Stack.Navigator initialRouteName={user ? "Index" : "Index"}>
         {user ? (
           <>
             <Stack.Screen
@@ -55,12 +53,9 @@ const Navigation = () => {
                 headerShown: false,
               }}
             />
-          </>
-        ) : (
-          <>
             <Stack.Screen
-              name="Index"
-              component={Login}
+              name="CreateFamilyScreen"
+              component={CreateFamilyScreen}
               options={{
                 headerShown: false,
               }}
@@ -72,6 +67,17 @@ const Navigation = () => {
                 headerShown: false,
               }}
             />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Index"
+              component={Login}
+              options={{
+                headerShown: false,
+              }}
+            />
+
             <Stack.Screen
               name="Welcome"
               component={Welcome}
@@ -82,14 +88,6 @@ const Navigation = () => {
             <Stack.Screen
               name="Signup"
               component={Signup}
-              options={{
-                headerShown: false,
-              }}
-            />
-
-            <Stack.Screen
-              name="CreateFamilyScreen"
-              component={CreateFamilyScreen}
               options={{
                 headerShown: false,
               }}

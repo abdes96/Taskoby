@@ -117,6 +117,7 @@ const Tasks = ({ route }) => {
       setSelectedProfileTasks(tasksData);
       setLoading(false);
     }
+    console.log("fetching tasks", selectedProfileTasks);
   };
 
   useFocusEffect(
@@ -146,6 +147,7 @@ const Tasks = ({ route }) => {
         onAddTask={handleAddTask}
         selectedProfile={selectedProfile}
         allProfiles={profiles}
+        profile={profile}
       />
 
       <SafeAreaView>
@@ -232,7 +234,7 @@ const Tasks = ({ route }) => {
                   <View
                     style={[
                       styles.circleBackground,
-                      { backgroundColor: profile.color },
+                      { backgroundColor: profile.bgColor },
                     ]}
                   >
                     <Image
@@ -245,12 +247,7 @@ const Tasks = ({ route }) => {
               </View>
             )}
           </View>
-          {profile.role !== "parent" && (
-            <View style={styles.noticeContainer}>
-              <Text style={styles.important}>Important!</Text>
-              <Text style={styles.noticeText}>movie night is today!</Text>
-            </View>
-          )}
+      
           <View style={styles.tabsContainer}>
             <TouchableOpacity
               style={selectedTab === "Today" ? styles.tabSelected : styles.tab}
@@ -277,130 +274,140 @@ const Tasks = ({ route }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.taskContainer}>
-            {selectedProfileTasks
-              .filter((task) => {
-                const taskDate = task.dueDate.toDate();
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                if (selectedTab === "Today") {
+            {selectedProfileTasks.length === 0 ||
+            selectedProfileTasks.every((task) => task.count === 0) ? (
+              <Text style={styles.noTasksText}>No tasks available...</Text>
+            ) : (
+              selectedProfileTasks
+                .filter((task) => {
+                  if (!task.dueDate) {
+                    console.log("Task missing dueDate:", task.dueDate);
+                    return false;
+                  }
+                  const taskDate = task.dueDate.toDate();
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const tomorrow = new Date(today);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  if (selectedTab === "Today") {
+                    return (
+                      taskDate.getDate() === today.getDate() &&
+                      taskDate.getMonth() === today.getMonth() &&
+                      taskDate.getFullYear() === today.getFullYear()
+                    );
+                  }
+
+                  // If the selected tab is "Tomorrow", return tasks due tomorrow
+                  if (selectedTab === "Tomorrow") {
+                    return (
+                      taskDate.getDate() === tomorrow.getDate() &&
+                      taskDate.getMonth() === tomorrow.getMonth() &&
+                      taskDate.getFullYear() === tomorrow.getFullYear()
+                    );
+                  }
+
+                  if (selectedTab === "This Month") {
+                    return (
+                      taskDate.getMonth() === today.getMonth() &&
+                      taskDate.getFullYear() === today.getFullYear()
+                    );
+                  }
+
+                  if (selectedTab === "Next 7 Days") {
+                    const nextWeek = new Date(today);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    return taskDate >= today && taskDate <= nextWeek;
+                  }
+
+                  if (selectedTab === "All") {
+                    return task.status === "To-do";
+                  }
+
+                  return true;
+                })
+                .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
+                .map((task, index) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const yesterday = new Date(today);
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  const isPastDue = task.dueDate.toDate() < yesterday;
                   return (
-                    taskDate.getDate() === today.getDate() &&
-                    taskDate.getMonth() === today.getMonth() &&
-                    taskDate.getFullYear() === today.getFullYear()
-                  );
-                }
-
-                // If the selected tab is "Tomorrow", return tasks due tomorrow
-                if (selectedTab === "Tomorrow") {
-                  return (
-                    taskDate.getDate() === tomorrow.getDate() &&
-                    taskDate.getMonth() === tomorrow.getMonth() &&
-                    taskDate.getFullYear() === tomorrow.getFullYear()
-                  );
-                }
-
-                if (selectedTab === "This Month") {
-                  return (
-                    taskDate.getMonth() === today.getMonth() &&
-                    taskDate.getFullYear() === today.getFullYear()
-                  );
-                }
-
-                if (selectedTab === "Next 7 Days") {
-                  const nextWeek = new Date(today);
-                  nextWeek.setDate(nextWeek.getDate() + 7);
-                  return taskDate >= today && taskDate <= nextWeek;
-                }
-
-                if (selectedTab === "All") {
-                  return task.status === "To-do";
-                }
-
-                return true;
-              })
-              .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
-              .map((task, index) => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const isPastDue = task.dueDate.toDate() < yesterday;
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    style={{
-                      ...styles.taskCard,
-                      backgroundColor:
-                        task.status === "Done"
-                          ? "#E0F9E6"
-                          : isPastDue && task.status === "To-do"
-                          ? "#ffcccb"
-                          : "#EAF6FF",
-                    }}
-                    onPress={() => {
-                      if (profile.role === "child") {
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        ...styles.taskCard,
+                        backgroundColor:
+                          task.status === "Done"
+                            ? "#E0F9E6"
+                            : isPastDue && task.status === "To-do"
+                            ? "#ffcccb"
+                            : "#EAF6FF",
+                      }}
+                      onPress={() => {
+                        // if (profile.role === "child") {
                         handleTaskClick(task);
-                      }
-                    }}
-                  >
-                    <View style={styles.textTask}>
-                      <Text style={styles.taskCategory}>{task.category}</Text>
-                      <Text style={styles.taskTitle}>{task.title}</Text>
-                      {task.time && (
-                        <View
+                      }}
+                    >
+                      <View style={styles.textTask}>
+                        <Text style={styles.taskCategory}>{task.category}</Text>
+                        <Text style={styles.taskTitle}>{task.title}</Text>
+                        {task.time && (
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              textAlign:"baseline"
+                            }}
+                          >
+                            <Image
+                              source={require("../../assets/sand.png")}
+                              style={{ resizeMode : "contain", width: 30, height: 30, marginRight: 10 }}
+                            />
+                            <Text style={styles.taskTime}>{task.time}</Text>
+                          </View>
+                        )}
+                        <Text
                           style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            paddingBottom: 10,
+                            ...styles.taskStatus,
+                            color:
+                              task.status === "Done" ? "#00B72E" : "#0074D1",
                           }}
                         >
-                          <Image
-                            source={require("../../assets/sand.png")}
-                            style={{ width: 25, height: 25, marginRight: 10 }}
-                          />
-                          <Text style={styles.taskTime}>{task.time}</Text>
-                        </View>
+                          {task.status}
+                        </Text>
+                      </View>
+                      {task.status === "Done" && (
+                        <Image
+                          source={require("../../assets/done.png")}
+                          style={styles.doneImage}
+                        />
                       )}
-                      <Text
-                        style={{
-                          ...styles.taskStatus,
-                          color: task.status === "Done" ? "#00B72E" : "#0074D1",
-                        }}
-                      >
-                        {task.status}
-                      </Text>
-                    </View>
-                    {task.status === "Done" && (
-                      <Image
-                        source={require("../../assets/done.png")}
-                        style={styles.doneImage}
-                      />
-                    )}
 
-                    <ImageBackground
-                      source={
-                        task.category === "Cleaning"
-                          ? require("../../assets/clean.png")
-                          : task.category === "Sport"
-                          ? require("../../assets/sport.png")
-                          : task.category === "Study"
-                          ? require("../../assets/study.png")
-                          : task.image
-                      }
-                      style={styles.taskImage}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                );
-              })}
+                      <ImageBackground
+                        source={
+                          task.category === "Cleaning"
+                            ? require("../../assets/clean.png")
+                            : task.category === "Sport"
+                            ? require("../../assets/sport.png")
+                            : task.category === "Study"
+                            ? require("../../assets/study.png")
+                            : task.image
+                        }
+                        style={styles.taskImage}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                  );
+                })
+            )}
           </View>
           <TaskPopup
             visible={isTaskModalVisible}
             onRequestClose={() => setTaskModalVisible(false)}
             task={selectedTask}
             profile={profile}
+            selectedProfile={selectedProfile}
             setTaskModalVisible={setTaskModalVisible}
             fetchTasks={fetchTasks}
           />
@@ -475,6 +482,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     marginVertical: 10,
   },
+  
 
   header: {
     marginTop: 50,
@@ -483,7 +491,6 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: "PoppinsBold",
     textAlign: "left",
-    padding: 15,
     paddingLeft: 20,
   },
   Profile: {
@@ -491,6 +498,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
+    marginBottom: 20,
   },
   profileContainer: {
     alignItems: "center",
@@ -594,27 +602,28 @@ const styles = StyleSheet.create({
   },
 
   profileImage: {
-    height: 110,
+    resizeMode: "contain",
+    height: 100,
     width: 100,
   },
   circleBackground: {
-    height: 150,
-    width: 150,
+    height: 130,
+    width: 130,
     borderRadius: 100,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#030002",
+    shadowColor: "#000",
     shadowOffset: {
-      width: 6,
-      height: 6,
+      width: 0,
+      height: 5,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 100,
-    elevation: 10,
+    shadowRadius: 25,
+    elevation: 5,
   },
   profileName: {
-    fontSize: 50,
-    fontFamily: "PoppinsBold",
+    fontSize: 40,
+    fontFamily: "PoppinsSemiBold",
 
     color: "#000000",
   },
@@ -649,11 +658,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     shadowColor: "#030002",
     shadowOffset: {
-      width: 6,
-      height: 6,
+      width: 0,
+      height: 4,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 100,
     elevation: 5,
   },
   tabSelected: {
@@ -667,11 +675,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     shadowColor: "#030002",
     shadowOffset: {
-      width: 6,
-      height: 6,
+      width: 0,
+      height: 4,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 100,
     elevation: 5,
   },
   tabOption: {
@@ -683,11 +690,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     shadowColor: "#030002",
     shadowOffset: {
-      width: 6,
-      height: 6,
+      width: 0,
+      height: 4,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 100,
     elevation: 5,
   },
   tabText: {
@@ -703,6 +709,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 100,
   },
+  noTasksText: {
+    fontSize: 20,
+    fontFamily: "PoppinsBold",
+    color: "#000000",
+    textAlign: "center",
+    marginVertical: 50,
+  },
   taskCard: {
     backgroundColor: "#EAF6FF",
     borderRadius: 10,
@@ -711,26 +724,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     height: "auto",
-    padding: 10,
+    paddingVertical: 5,
     borderWidth: 1,
     borderColor: "black",
   },
   taskCategory: {
     fontSize: 18,
-    color: "#000000",
+    color: "#4D4D4D",
     fontFamily: "Poppins",
   },
   textTask: {
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
+    paddingLeft: 20,
+    
   },
 
   taskTitle: {
-    fontSize: 24,
+    fontSize: 28,
     color: "#000000",
-    fontFamily: "PoppinsBold",
+    fontFamily: "PoppinsSemiBold",
     width: 200,
-    paddingBottom: 15,
+    zIndex: 999,
   },
   taskStatus: {
     fontSize: 18,
@@ -739,19 +754,20 @@ const styles = StyleSheet.create({
   taskTime: {
     fontSize: 16,
     color: "#000000",
+    fontFamily: "Poppins",
   },
   doneImage: {
     position: "absolute",
     zIndex: 999,
     height: 80,
     width: 80,
-    right: -10,
-    top: -30,
+    right: -20,
+    top: 30,
   },
   taskImage: {
     height: 150,
     width: 200,
-    right: 10,
+    right: 40,
     top: 0,
   },
   tabNavigator: {

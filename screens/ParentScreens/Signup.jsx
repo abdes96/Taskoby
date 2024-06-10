@@ -19,13 +19,6 @@ import {
   ScrollView,
 } from "react-native";
 
-const COLORS = {
-  white: "#FFFFFF",
-  black: "#222222",
-  primary: "#007260",
-  secondary: "#0000",
-  grey: "#EEEEEE",
-};
 const Signup = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +30,17 @@ const Signup = ({ navigation }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleRegister = async () => {
+    const nameRegex = /^[a-zA-Z-' ]+$/;
+
+    if (!firstname || !lastname || !email || !password || !confirmPassword) {
+      Alert.alert("Error", "All fields are required");
+      return;
+    }
+    if (!nameRegex.test(firstname) || !nameRegex.test(lastname)) {
+      Alert.alert("Error", "First name and last name should only contain letters, hyphens, apostrophes, and spaces");
+      return;
+    }
+
     if (!isChecked) {
       Alert.alert("Error", "You must agree to the terms and conditions");
       return;
@@ -65,14 +69,7 @@ const Signup = ({ navigation }) => {
         uid: user.uid,
       });
 
-      const profileRef = doc(db, "users", user.uid , "profiles", "default");
-
-      await setDoc(profileRef, {
-            profileId: "default",
-            firstname: firstname,
-            lastname: lastname,
-            role: "parent",
-      });
+      
 
       console.log("User registered with:", user.email);
       navigation.navigate("CreateFamilyScreen");
@@ -108,143 +105,221 @@ const Signup = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      style={{
-        flex: 1,
-      }}
-      colors={[COLORS.grey, COLORS.grey]}
-    >
-      <View>
-        <Image
-          source={require("../../assets/shape.png")}
-          style={styles.image1}
-        />
-      </View><KeyboardAvoidingView
+    <View style={styles.container}>
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView keyboardShouldPersistTaps="handled">
-      <View style={{ marginTop: 80, marginHorizontal: 22 }}>
-        <Text style={styles.title}>Create Account</Text>
-
-        <Text
-          style={{
-            fontSize: 16,
-            color: COLORS.black,
-            fontFamily: "Poppins",
-            fontWeight: "bold",
-          }}
+        <View style={styles.bg}>
+          <Image
+            source={require("../../assets/Bonbon2.png")}
+            style={styles.bgimgs1}
+          />
+          <Image
+            source={require("../../assets/Bonbon3.png")}
+            style={styles.bgimgs2}
+          />
+          <Image
+            source={require("../../assets/bonbon.png")}
+            style={styles.bgimgs3}
+          />
+          <Image
+            source={require("../../assets/Bonbon4.png")}
+            style={styles.bgimgs4}
+          />
+          <Image
+            source={require("../../assets/Bonbon5.png")}
+            style={styles.bgimgs5}
+          />
+          <Image
+            source={require("../../assets/Bonbon6.png")}
+            style={styles.bgimgs6}
+          />
+        </View>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          Lets help your family in completing tasks !
-        </Text>
-      </View>
-      
-          <View style={styles.container}>
-            <View style={styles.container}>
-              <Text style={styles.subtitle}>Register</Text>
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Account</Text>
 
-              <Text style={styles.inputDescription}>Firstname</Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: "PoppinsSemiBold",
+              }}
+            >
+              Lets help your family in completing tasks !
+            </Text>
+          </View>
+
+          <View style={styles.content}>
+            <TouchableOpacity
+              style={styles.loginLink}
+              onPress={() => navigation.navigate("Index")}
+            >
+              <Text style={styles.logintext}>Already have an account ?</Text>
+              <Text style={{ fontFamily: "PoppinsBold", fontSize: 18 }}>
+                {" "}
+                Login
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.subtitle}>Register</Text>
+
+            <Text style={styles.inputDescription}>Firstname</Text>
+            <TextInput
+              style={styles.input}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="Firstname"
+              value={firstname}
+              onChangeText={setFirstname}
+            />
+            <Text style={styles.inputDescription}>Lastname</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Lastname"
+              value={lastname}
+              onChangeText={setLastname}
+            />
+            <Text style={styles.inputDescription}>Email</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+            />
+
+            <Text style={styles.inputDescription}>Password</Text>
+
+            <View>
               <TextInput
                 style={styles.input}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder="Firstname"
-                value={firstname}
-                onChangeText={setFirstname}
-              />
-              <Text style={styles.inputDescription}>Lastname</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Lastname"
-                value={lastname}
-                onChangeText={setLastname}
-              />
-              <Text style={styles.inputDescription}>Email</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-              />
-
-              <Text style={styles.inputDescription}>Password</Text>
-
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  secureTextEntry={!isPasswordShown}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <TouchableOpacity
-                  style={styles.password}
-                  onPress={() => setIsPasswordShown(!isPasswordShown)}
-                >
-                  {isPasswordShown == true ? (
-                    <Ionicons name="eye-off" size={24} color={COLORS.black} />
-                  ) : (
-                    <Ionicons name="eye" size={24} color={COLORS.black} />
-                  )}
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.inputDescription}>Confirm password</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="confirm Password"
+                placeholder="Password"
                 secureTextEntry={!isPasswordShown}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                value={password}
+                onChangeText={setPassword}
               />
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  paddingBottom: 16,
-                }}
+              <TouchableOpacity
+                style={styles.password}
+                onPress={() => setIsPasswordShown(!isPasswordShown)}
               >
-                <Checkbox
-                  style={{ marginRight: 8 }}
-                  value={isChecked}
-                  onValueChange={setIsChecked}
-                  color={isChecked ? COLORS.primary : undefined}
-                />
-
-                <Text>I aggree to the terms and conditions</Text>
-              </View>
-              <Button
-                title="Register"
-                onPress={handleRegister}
-                style={styles.button}
-                bgColor="#62D2C3"
-              />
-
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text style={styles.loginLink}>
-                  Already have an account ?
-                  <Text style={[styles.loginText, styles.loginLink]}>
-                    {" "}
-                    Login
-                  </Text>
-                </Text>
+                {isPasswordShown == true ? (
+                  <Ionicons name="eye-off" size={24} color="black" />
+                ) : (
+                  <Ionicons name="eye" size={24} color="black" />
+                )}
               </TouchableOpacity>
             </View>
+            <Text style={styles.inputDescription}>Confirm password</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="confirm Password"
+              secureTextEntry={!isPasswordShown}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+
+            <View
+              style={{
+                flexDirection: "row",
+                paddingBottom: 16,
+              }}
+            >
+              <Checkbox
+                style={{ marginRight: 8 , fontFamily: "Poppins" }}
+                value={isChecked}
+                onValueChange={setIsChecked}
+                color={isChecked ? "#BEACFF" : "grey"}
+              />
+              <Text>I aggree to the terms and conditions</Text>
+            </View>
+            <TouchableOpacity style={styles.LogInBtn} onPress={handleRegister}>
+              <Text style={styles.LogText}>Register</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "start",
-    marginVertical: 5,
-    paddingHorizontal: 15,
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
+  bg: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    zIndex: -1,
+  },
+  bgimgs1: {
+    width: 120,
+    height: 130,
+    position: "absolute",
+    top: 50,
+    right: -60,
+  },
+
+  bgimgs2: {
+    width: 120,
+    height: 130,
+    position: "absolute",
+    padding: 20,
+    right: -30,
+    top: 300,
+  },
+  bgimgs3: {
+    width: 130,
+    height: 150,
+    position: "absolute",
+    top: -40,
+    left: 150,
+  },
+  bgimgs4: {
+    width: 130,
+    height: 150,
+    position: "absolute",
+    bottom: -50,
+    right: -50,
+  },
+  bgimgs5: {
+    width: 100,
+    height: 130,
+    position: "absolute",
+    bottom: 0,
+    right: 130,
+  },
+  bgimgs6: {
+    width: 120,
+    height: 160,
+    position: "absolute",
+    bottom: -100,
+    left: -70,
+  },
+  image1: {
+    width: 250,
+    height: 250,
+    position: "absolute",
+    top: -20,
+    right: 10,
+    transform: [{ translateX: 20 }, { translateY: 50 }, { rotate: "-90deg" }],
+  },
+  header: {
+    alignItems: "left",
+    justifyContent: "center",
+    marginTop: 50,
+    paddingHorizontal: 20,
+  },
+  content: {
+    marginHorizontal: 20,
+    marginBottom: 50,
   },
   image1: {
     width: 250,
@@ -256,8 +331,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 30,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
     marginBottom: 20,
     color: "#000",
     marginVertical: 12,
@@ -265,25 +339,24 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 24,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
     marginBottom: 15,
     color: "#000",
     marginVertical: 12,
   },
   input: {
     width: "100%",
-    height: 50,
+    height: 60,
     borderWidth: 1,
-    borderColor: "#ffff",
-    borderRadius: 10,
+    borderRadius: 15,
     paddingHorizontal: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#E9F5FF",
     marginBottom: 15,
+    fontSize: 16,
   },
   inputDescription: {
     marginBottom: 4,
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsSemiBold",
     fontSize: 16,
   },
   password: {
@@ -291,21 +364,38 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 12,
   },
+  LogInBtn: {
+    backgroundColor: "#EDE8FF",
+    padding: 10,
+    borderRadius: 15,
+    marginTop: 20,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    elevation: 5,
+  },
+  LogText: {
+    textAlign: "center",
+    fontSize: 20,
+    fontFamily: "PoppinsSemiBold",
+  },
 
   loginLink: {
-    marginTop: 20,
-    color: "#ffff",
+    width: "100%",
+    marginVertical: 20,
     fontSize: 18,
-    borderBottomColor: "#fff",
     borderBottomWidth: 2,
-    textAlign: "center",
-    fontFamily: "Poppins",
+    flexDirection: "row",
+    justifyContent: "center",
+    textAlign: "baseline",
   },
-  loginText: {
-    fontSize: 16,
-    color: COLORS.white,
+  logintext: {
+    fontSize: 18,
     fontFamily: "Poppins",
-    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 

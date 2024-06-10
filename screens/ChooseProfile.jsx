@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import {
@@ -8,8 +8,9 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  ScrollView
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 
 const UserProfile = ({ name, imageSource, color, navigation, profile }) => {
   return (
@@ -30,7 +31,10 @@ const UserProfile = ({ name, imageSource, color, navigation, profile }) => {
 const ChooseProfile = ({ navigation }) => {
   const [profiles, setProfiles] = useState([]);
 
-  useEffect(() => {
+
+
+useFocusEffect(
+  React.useCallback(() => {
     const fetchProfiles = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -44,10 +48,18 @@ const ChooseProfile = ({ navigation }) => {
         id: doc.id,
       }));
       setProfiles(profilesData);
+      
+      if (profilesData.length === 0) {
+        navigation.navigate("CreateFamilyScreen");
+      } else if (!profilesData.some(profile => profile.role === 'child')) {
+        navigation.navigate("AddKidsScreen");
+      }
     };
+    console.log('fetching profiles' , profiles);
 
     fetchProfiles();
-  }, []);
+  }, [])
+);
 
   return (
     <View style={styles.container}>
@@ -88,10 +100,15 @@ const ChooseProfile = ({ navigation }) => {
               />
             </View>
             <View style={styles.profilesContainer}>
-              <View style={styles.topLeftEdge} />
-              <View style={styles.topRightEdge} />
-              <View style={styles.bottomLeftEdge} />
-              <View style={styles.bottomRightEdge} />
+              {profiles.length > 0 && (
+                <>
+                  <View style={styles.topLeftEdge} />
+                  <View style={styles.topRightEdge} />
+                  <View style={styles.bottomLeftEdge} />
+                  <View style={styles.bottomRightEdge} />
+                </>
+              )}
+
               {profiles.map((profile) => {
                 return (
                   <UserProfile
@@ -182,25 +199,27 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
   },
 
   headerText: {
     fontSize: 60,
-    fontWeight: "900",
     color: "#000000",
     textAlign: "center",
     marginBottom: 20,
+    fontFamily: "PoppinsBold",
   },
   questionMark: {
-    height: 100,
-    width: 70,
+    resizeMode: "contain",
+    height: 90,
+    width: 90,
+    marginLeft: -15,
   },
   profilesContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     flexWrap: "wrap",
     padding: 10,
+    paddingHorizontal: 20,
   },
   topLeftEdge: {
     position: "absolute",
@@ -259,7 +278,7 @@ const styles = StyleSheet.create({
   profileName: {
     marginTop: 10,
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "PoppinsBold",
   },
 });
 

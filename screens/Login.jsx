@@ -28,6 +28,10 @@ const Login = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Both fields are required");
+      return;
+    }
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -44,6 +48,7 @@ const Login = ({ navigation }) => {
       // Check if there are any profiles
       if (profilesSnapshot.empty) {
         console.log("No profiles found.");
+        navigation.navigate("CreateFamilyScreen");
       } else {
         console.log("Profiles found.");
       }
@@ -102,7 +107,7 @@ const Login = ({ navigation }) => {
     <View style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        style={styles.container}
       >
         <View style={styles.bg}>
           <Image
@@ -130,22 +135,21 @@ const Login = ({ navigation }) => {
             style={styles.bgimgs6}
           />
         </View>
-        <ScrollView keyboardShouldPersistTaps="handled">
-          <View style={styles.content}>
-            <View style={styles.intro}>
-              <Text style={styles.title}>Login</Text>
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontFamily: "Poppins",
-                  fontWeight: "bold",
-                }}
-                > 
-                Welcome back! Please login to your account.
-              </Text>
-            </View>
-            <Text style={styles.subtitle}>Login</Text>
 
+        <View style={styles.content}>
+          <View style={styles.intro}>
+            <Text style={styles.title}>Log in</Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: "Poppins",
+              }}
+            >
+              Welcome back! Please login to your account.
+            </Text>
+          </View>
+
+          <View style={styles.inputforms}>
             <Text style={styles.inputDescription}>Email</Text>
             <TextInput
               style={styles.input}
@@ -174,24 +178,27 @@ const Login = ({ navigation }) => {
                 )}
               </TouchableOpacity>
             </View>
-
-            <Button
-              title="Login"
-              onPress={handleLogin}
-              style={styles.button}
-              bgColor="#62D2C3"
-            />
-
-            <TouchableOpacity
-              style={styles.signupLink}
-              onPress={() => navigation.navigate("Signup")}
-            >
-              <Text style={styles.signupText1}>Already have an account ? </Text>
-
-              <Text style={styles.signupText}>Sign up</Text>
-            </TouchableOpacity>
           </View>
-        </ScrollView>
+          <TouchableOpacity style={styles.LogInBtn} onPress={handleLogin}>
+            <Text style={styles.LogText}>Log In</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.forgotPassword}
+            onPress={() => navigation.navigate("ForgotPassword")}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.signupLink}
+            onPress={() => navigation.navigate("Signup")}
+          >
+            <Text style={styles.signupText1}>Already have an account ? </Text>
+
+            <Text style={styles.signupText}>Sign up</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -200,10 +207,24 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#fff",
   },
   content: {
-    zIndex: 1,
-    padding: 20,
+    marginHorizontal: 20,
+  },
+  inputforms: {},
+  LogInBtn: {
+    backgroundColor: "#EDE8FF",
+    padding: 10,
+    borderRadius: 15,
+    marginTop: 20,
+    borderWidth: 1,
+  },
+  LogText: {
+    textAlign: "center",
+    fontSize: 20,
+    fontFamily: "PoppinsSemiBold",
   },
   bg: {
     position: "absolute",
@@ -263,18 +284,21 @@ const styles = StyleSheet.create({
     right: 10,
     transform: [{ translateX: 20 }, { translateY: 50 }, { rotate: "-90deg" }],
   },
+  intro: {
+    paddingBottom: 20,
+  },
+
   title: {
     fontSize: 30,
-    fontWeight: "bold",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsBold",
     marginBottom: 20,
     color: "#000",
     marginVertical: 12,
     textTransform: "uppercase",
   },
+
   subtitle: {
     fontSize: 24,
-    fontWeight: "bold",
     fontFamily: "Poppins",
     marginBottom: 15,
     color: "#000",
@@ -282,17 +306,17 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    height: 50,
+    height: 60,
     borderWidth: 1,
-    borderColor: "#ffff",
-    borderRadius: 10,
+    borderRadius: 15,
     paddingHorizontal: 10,
-    backgroundColor: "#fff",
-    marginBottom: 15,
+    backgroundColor: "#E9F5FF",
+    marginBottom: 20,
+    fontSize: 16,
   },
   inputDescription: {
     marginBottom: 4,
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsSemiBold",
     fontSize: 16,
   },
   password: {
@@ -301,7 +325,7 @@ const styles = StyleSheet.create({
     right: 12,
   },
   signupLink: {
-    marginTop: 20,
+    marginTop: 30,
     fontSize: 18,
     borderBottomColor: "black",
     borderBottomWidth: 2,
@@ -309,12 +333,11 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins",
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "baseline",
   },
   signupText: {
     fontSize: 18,
-    fontFamily: "Poppins",
-    fontWeight: "bold",
+    fontFamily: "PoppinsSemiBold",
   },
   signupText1: {
     fontSize: 18,
