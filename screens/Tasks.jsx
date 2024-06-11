@@ -11,7 +11,7 @@ import {
   ImageBackground,
   Modal,
 } from "react-native";
-import TaskCreationModal from "./components/TaskCreationModal";
+import TaskCreationModal from "./KidsScreens/components/TaskCreationModal";
 import { getAuth } from "firebase/auth";
 import {
   getFirestore,
@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 
-import TaskPopup from "./components/TaskPopup";
+import TaskPopup from "./KidsScreens/components/TaskPopup";
 
 const win = Dimensions.get("window");
 const ratio = win.width / 124;
@@ -208,7 +208,7 @@ const Tasks = ({ route }) => {
                         Add a new task for {selectedProfile.firstName}
                       </Text>
                       <Image
-                        source={require("../../assets/add.png")}
+                        source={require("../assets/add.png")}
                         style={styles.addIcon}
                       />
                     </TouchableOpacity>
@@ -221,7 +221,7 @@ const Tasks = ({ route }) => {
               <View style={styles.Profile}>
                 <View style={styles.dateContainer}>
                   <Image
-                    source={require("../../assets/date.png")}
+                    source={require("../assets/date.png")}
                     style={styles.DatePaper}
                   />
                   <View style={styles.date}>
@@ -247,7 +247,7 @@ const Tasks = ({ route }) => {
               </View>
             )}
           </View>
-      
+
           <View style={styles.tabsContainer}>
             <TouchableOpacity
               style={selectedTab === "Today" ? styles.tabSelected : styles.tab}
@@ -268,7 +268,7 @@ const Tasks = ({ route }) => {
               onPress={() => setMenuVisible(true)}
             >
               <Image
-                source={require("../../assets/option.png")}
+                source={require("../assets/option.png")}
                 style={styles.menuIcon}
               />
             </TouchableOpacity>
@@ -358,12 +358,17 @@ const Tasks = ({ route }) => {
                             style={{
                               flexDirection: "row",
                               alignItems: "center",
-                              textAlign:"baseline"
+                              textAlign: "baseline",
                             }}
                           >
                             <Image
-                              source={require("../../assets/sand.png")}
-                              style={{ resizeMode : "contain", width: 30, height: 30, marginRight: 10 }}
+                              source={require("../assets/sand.png")}
+                              style={{
+                                resizeMode: "contain",
+                                width: 30,
+                                height: 30,
+                                marginRight: 10,
+                              }}
                             />
                             <Text style={styles.taskTime}>{task.time}</Text>
                           </View>
@@ -380,7 +385,7 @@ const Tasks = ({ route }) => {
                       </View>
                       {task.status === "Done" && (
                         <Image
-                          source={require("../../assets/done.png")}
+                          source={require("../assets/done.png")}
                           style={styles.doneImage}
                         />
                       )}
@@ -388,11 +393,11 @@ const Tasks = ({ route }) => {
                       <ImageBackground
                         source={
                           task.category === "Cleaning"
-                            ? require("../../assets/clean.png")
+                            ? require("../assets/clean.png")
                             : task.category === "Sport"
-                            ? require("../../assets/sport.png")
+                            ? require("../assets/sport.png")
                             : task.category === "Study"
-                            ? require("../../assets/study.png")
+                            ? require("../assets/study.png")
                             : task.image
                         }
                         style={styles.taskImage}
@@ -496,7 +501,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     marginVertical: 10,
   },
-  
 
   header: {
     marginTop: 50,
@@ -552,7 +556,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   addIcon: {
-    
     width: 50,
     height: 50,
   },
@@ -752,7 +755,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-around",
     paddingLeft: 20,
-    
   },
 
   taskTitle: {

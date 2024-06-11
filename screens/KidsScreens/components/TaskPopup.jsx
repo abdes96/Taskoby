@@ -93,7 +93,6 @@ const TaskPopup = ({
       setUpdatedTask({ ...task });
 
       return () => {
-        // You can perform any cleanup here if needed
       };
     }, [task])
   );

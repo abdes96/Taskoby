@@ -66,7 +66,7 @@ const Homekid = ({ route }) => {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Image source={require("../../assets/loading.png")} />
+        <Image source={require("../assets/loading.png")} />
       </View>
     );
   }
@@ -129,7 +129,7 @@ const Homekid = ({ route }) => {
         >
           {index === 0 && (
             <Image
-              source={require("../../assets/first.png")}
+              source={require("../assets/first.png")}
               style={styles.extraImage}
             />
           )}

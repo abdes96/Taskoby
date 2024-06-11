@@ -11,7 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { auth, db } from "../../firebaseConfig";
-import { writeBatch, doc } from "firebase/firestore";
+import { writeBatch, doc, collection } from "firebase/firestore";
 import { ref, getDownloadURL, getStorage } from "firebase/storage";
 
 const AVATARS = [
@@ -40,6 +40,10 @@ const AVATARS = [
 const CreateFamilyScreen = ({ navigation }) => {
   const user = auth.currentUser;
   const storage = getStorage();
+  const [parentAvatarUrls, setParentAvatarUrls] = useState([]);
+  const [selectedParentAvatarIndex, setSelectedParentAvatarIndex] =
+    useState(null);
+  const [selectedParentIndex, setSelectedParentIndex] = useState(null);
   const [guardians, setGuardians] = useState([
     {
       firstname: "",
@@ -50,9 +54,6 @@ const CreateFamilyScreen = ({ navigation }) => {
       bgColor2: null,
     },
   ]);
-  const [parentAvatarUrls, setParentAvatarUrls] = useState([]);
-  const [selectedParentAvatarIndex, setSelectedParentAvatarIndex] = useState(0);
-
   const fetchParentAvatarUrls = async () => {
     try {
       const urls = await Promise.all(
@@ -76,7 +77,7 @@ const CreateFamilyScreen = ({ navigation }) => {
     const selectedAvatar = AVATARS[avatarIndex];
 
     try {
-      const avatarUrl = selectedAvatar.name;
+      const avatarUrl = parentAvatarUrls[avatarIndex];
       updatedGuardians[parentIndex].avatar = avatarUrl;
       updatedGuardians[parentIndex].bgColor = selectedAvatar.color;
       updatedGuardians[parentIndex].bgColor2 = selectedAvatar.color2;
@@ -87,7 +88,6 @@ const CreateFamilyScreen = ({ navigation }) => {
       console.error("Error selecting parent avatar:", error);
     }
     setSelectedParentAvatarIndex(avatarIndex);
-
   };
 
   const handleAddGuardian = () => {
@@ -106,8 +106,16 @@ const CreateFamilyScreen = ({ navigation }) => {
 
     setGuardians([
       ...guardians,
-      { firstname: "", lastname: "", specificRole: "" , avatar: null, bgColor: null, bgColor2: null},
+      {
+        firstname: "",
+        lastname: "",
+        specificRole: "",
+        avatar: null,
+        bgColor: null,
+        bgColor2: null,
+      },
     ]);
+    setSelectedParentIndex(guardians.length);
   };
 
   const handleGuardianChange = (index, key, value) => {
@@ -118,38 +126,46 @@ const CreateFamilyScreen = ({ navigation }) => {
 
   const handleCreateFamily = async () => {
     const emptyGuardian = guardians.find(
-      (guardian) => !guardian.firstname || !guardian.lastname
+      (guardian) =>
+        !guardian.firstname ||
+        !guardian.lastname ||
+        !guardian.specificRole ||
+        !guardian.avatar
     );
 
     if (emptyGuardian) {
       alert("Please fill out all fields for the existing guardians.");
       return;
     }
-    const batch = writeBatch(db);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const guardiansRef = collection(userRef, "profiles");
+      const batch = writeBatch(db);
 
-    guardians.forEach((guardian, index) => {
-      const profileRef = doc(
-        db,
-        "users",
-        user.uid,
-        "profiles",
-        `guardian${index + 1}`
-      );
-      batch.set(profileRef, {
-        profileId: `guardian${index + 1}`,
-        firstName: guardian.firstname,
-        lastName: guardian.lastname,
-        role: "parent",
-        specificRole: guardian.specificRole,
-        avatarUrl: parentAvatarUrls[selectedParentAvatarIndex],
-        bgColor: guardian.bgColor,
-        bgColor2: guardian.bgColor2,
-      });
-    });
+      for (const guardian of guardians) {
+        const guardianRef = doc(guardiansRef);
+        batch.set(guardianRef, {
+          firstName: guardian.firstname,
+          lastName: guardian.lastname,
+          role: "parent",
+          specificRole: guardian.specificRole,
+          avatarUrl: guardian.avatar,
+          bgColor: guardian.bgColor,
+          bgColor2: guardian.bgColor2,
+        });
 
-    await batch.commit();
-    console.log("Family created successfully!", guardians);
-    navigation.navigate("AddKidsScreen");
+        const Tasks = collection(guardianRef, "tasks");
+        const taskCounterRef = doc(Tasks, "counter");
+        batch.set(taskCounterRef, { count: 0 });
+      }
+
+      await batch.commit();
+      console.log("Family created successfully!", guardians);
+      navigation.navigate("AddKidsScreen");
+    } catch (error) {
+      console.error("Error creating family:", error);
+      Alert.alert("Error", "Could not create family. Please try again.");
+    }
   };
 
   return (

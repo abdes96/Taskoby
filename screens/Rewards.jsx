@@ -11,10 +11,10 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
-import { db, auth } from "../../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import { View, Modal, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import RewardCreationModal from "./components/RewardCreationModal";
+import RewardCreationModal from "./KidsScreens/components/RewardCreationModal";
 import { Entypo } from "@expo/vector-icons";
 
 const Rewards = ({ route }) => {
@@ -190,22 +190,22 @@ const Rewards = ({ route }) => {
       <Image
         source={
           item.category === "Food"
-            ? require("../../assets/hamburger.png")
+            ? require("../assets/hamburger.png")
             : item.category === "Games"
-            ? require("../../assets/game.png")
+            ? require("../assets/game.png")
             : item.category === "Event"
-            ? require("../../assets/event.png")
+            ? require("../assets/event.png")
             : item.category === "Other"
-            ? require("../../assets/other.png")
+            ? require("../assets/other.png")
             : item.category === "Select a category"
-            ? require("../../assets/other.png")
+            ? require("../assets/other.png")
             : { uri: item.image }
         }
         style={styles.rewardImage}
       />
       <Text style={styles.rewardTitle}>{item.title}</Text>
       <View style={styles.price}>
-        <Image source={require("../../assets/coin.png")} style={styles.coin} />
+        <Image source={require("../assets/coin.png")} style={styles.coin} />
         <Text style={styles.rewardCost}>{item.price} coins</Text>
       </View>
     </TouchableOpacity>
@@ -238,13 +238,15 @@ const Rewards = ({ route }) => {
               <Image
                 source={
                   selectedReward.category === "Food"
-                    ? require("../../assets/hamburger.png")
+                    ? require("../assets/hamburger.png")
                     : selectedReward.category === "Games"
-                    ? require("../../assets/game.png")
+                    ? require("../assets/game.png")
                     : selectedReward.category === "Event"
-                    ? require("../../assets/event.png")
+                    ? require("../assets/event.png")
                     : selectedReward.category === "Other"
-                    ? require("../../assets/other.png")
+                    ? require("../assets/other.png")
+                    : selectedReward.category === "Select a category"
+                    ? require("../assets/other.png")
                     : { uri: selectedReward.image }
                 }
                 style={styles.modalImage}
@@ -252,7 +254,7 @@ const Rewards = ({ route }) => {
               <Text style={styles.modalTitle}>{selectedReward.title}</Text>
               <View style={styles.price}>
                 <Image
-                  source={require("../../assets/coin.png")}
+                  source={require("../assets/coin.png")}
                   style={styles.coinRedeem}
                 />
 
@@ -291,7 +293,7 @@ const Rewards = ({ route }) => {
         <ScrollView showsVerticalScrollIndicator={false}>
           {firstVisit ? (
             <View style={styles.welcome}>
-              <Image source={require("../../assets/welcomrewarde.png")} />
+              <Image source={require("../assets/welcomrewarde.png")} />
               <Text style={styles.welcomeTitle}>Rewards</Text>
               <Text style={styles.welcomeText}>
                 Win and choose rewards based on the amount of coins you earned
@@ -314,7 +316,7 @@ const Rewards = ({ route }) => {
                   <Text style={styles.balanceText}>coin balance</Text>
                   <View style={styles.Balance}>
                     <Image
-                      source={require("../../assets/coins.png")}
+                      source={require("../assets/coins.png")}
                       style={styles.coinIcon}
                     />
                     <Text style={styles.coinBalance}>{coinBalance}</Text>
@@ -328,7 +330,7 @@ const Rewards = ({ route }) => {
                   >
                     <Text style={styles.btnText}>Add a new reward</Text>
                     <Image
-                      source={require("../../assets/add.png")}
+                      source={require("../assets/add.png")}
                       style={styles.addIcon}
                     />
                   </TouchableOpacity>

@@ -3,13 +3,13 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebaseConfig"; // Adjust the path as necessary
-import Welcome from "../screens/Welcome";
 import Signup from "../screens/ParentScreens/Signup";
 import CreateFamilyScreen from "../screens/ParentScreens/CreateFamilyScreen";
 import AddKidsScreen from "../screens/ParentScreens/AddKidsScreen";
 import ChooseProfile from "../screens/ChooseProfile";
-import KidsTabNavigator from "../screens/KidsScreens/TabNavigator";
+import KidsTabNavigator from "../screens/TabNavigator";
 import Login from "../screens/Login";
+import EditAccount from "../screens/ParentScreens/EditAccount";
 
 const Stack = createStackNavigator();
 
@@ -56,13 +56,22 @@ const Navigation = () => {
             <Stack.Screen
               name="CreateFamilyScreen"
               component={CreateFamilyScreen}
+              initialParams={{ newparent: true }}
+              options={{
+                headerShown: false,
+              }}
+            />
+
+            <Stack.Screen
+              name="AddKidsScreen"
+              component={AddKidsScreen}
               options={{
                 headerShown: false,
               }}
             />
             <Stack.Screen
-              name="AddKidsScreen"
-              component={AddKidsScreen}
+              name="EditAccount"
+              component={EditAccount}
               options={{
                 headerShown: false,
               }}
@@ -78,13 +87,6 @@ const Navigation = () => {
               }}
             />
 
-            <Stack.Screen
-              name="Welcome"
-              component={Welcome}
-              options={{
-                headerShown: false,
-              }}
-            />
             <Stack.Screen
               name="Signup"
               component={Signup}

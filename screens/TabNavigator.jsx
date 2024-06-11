@@ -4,10 +4,10 @@ import { Entypo } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { FontAwesome6 } from '@expo/vector-icons';
 import ProfileTab from "./Profile";
-import Homekid from "./HomeKid";
 import { Platform, View, StyleSheet } from "react-native";
 import Tasks from "./Tasks";
 import Rewards from "./Rewards";
+import Homekid from "./HomeKid";
 
 const Tab = createBottomTabNavigator();
 
@@ -80,7 +80,6 @@ function KidsTabNavigator({ route }) {
           },
         }}
       />
-      {profile.role !== "parent" && (
         <Tab.Screen
           name="Profile"
           component={ProfileTab}
@@ -100,7 +99,7 @@ function KidsTabNavigator({ route }) {
           }}
         />
         
-      )}
+    
       
     </Tab.Navigator>
   );
