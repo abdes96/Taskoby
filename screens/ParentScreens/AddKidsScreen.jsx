@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { LinearGradient } from "expo-linear-gradient";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   getFirestore,
@@ -21,7 +20,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import Button from "../../components/Button";
 
 const AVATARS = [
   {
@@ -117,8 +115,7 @@ const AddKidsScreen = ({ navigation }) => {
     const selectedAvatar = AVATARS[avatarIndex];
 
     try {
-      const avatarUrl = selectedAvatar.name;
-      updatedKids[kidIndex].avatar = avatarUrl;
+      updatedKids[kidIndex].avatar = avatarUrls[avatarIndex];
       updatedKids[kidIndex].bgColor = selectedAvatar.color;
       updatedKids[kidIndex].bgColor2 = selectedAvatar.color2;
       updatedKids[kidIndex].avatarIndex = avatarIndex;
@@ -147,26 +144,30 @@ const AddKidsScreen = ({ navigation }) => {
 
       for (const kid of kids) {
         const kidRef = doc(kidsRef);
-        batch.set(kidRef, {
+        const kidData = {
           firstName: kid.firstName,
           lastName: kid.lastName,
-          avatarUrl: avatarUrls[selectedAvatarIndex],
+          avatarUrl: kid.avatar,
           bgColor: kid.bgColor,
           bgColor2: kid.bgColor2,
           role: "child",
-        });
+        };
 
-        const Tasks = collection(kidRef, "tasks");
-        const taskCounterRef = doc(Tasks, "counter");
-        batch.set(taskCounterRef, { count: 0 });
+        console.log("Adding kid to Firebase:", kidData);
+
+        batch.set(kidRef, kidData);
       }
-
       await batch.commit();
+
       navigation.navigate("ChooseProfileScreen");
     } catch (error) {
       console.error("Error saving kids profiles:", error);
       Alert.alert("Error", "Could not save kid profiles. Please try again.");
     }
+  };
+  const handleRemoveKid = (index) => {
+    const updatedKids = kids.filter((_, i) => i !== index);
+    setKids(updatedKids);
   };
 
   return (
@@ -207,7 +208,12 @@ const AddKidsScreen = ({ navigation }) => {
           <View style={styles.header}>
             <Text style={styles.title}>Add your kids</Text>
           </View>
-          <View style={[styles.content, kids.length > 1 ? styles.contentWithMargin : null]}>
+          <View
+            style={[
+              styles.content,
+              kids.length > 1 ? styles.contentWithMargin : null,
+            ]}
+          >
             {kids.map((kid, index) => (
               <View style={styles.inputs} key={index}>
                 <Text style={styles.subtitle}>Kid {index + 1}</Text>
@@ -246,6 +252,14 @@ const AddKidsScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   ))}
                 </View>
+                {index > 0 && (
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveKid(index)}
+                  >
+                    <Text style={styles.removeButtonText}>Remove Kid</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
 
@@ -363,7 +377,7 @@ const styles = StyleSheet.create({
   },
   selectedAvatar: {
     borderColor: "#000",
-    
+
     borderRadius: 50,
     padding: 45,
   },
@@ -415,6 +429,20 @@ const styles = StyleSheet.create({
   LogText: {
     textAlign: "center",
     fontSize: 20,
+    fontFamily: "PoppinsSemiBold",
+  },
+  removeButton: {
+    backgroundColor: "#FFDFAC",
+    padding: 10,
+    borderRadius: 5,
+    margin: "auto",
+    marginVertical: 20,
+    width: "50%",
+  },
+  removeButtonText: {
+    color: "#000",
+    textAlign: "center",
+    fontSize: 16,
     fontFamily: "PoppinsSemiBold",
   },
 });

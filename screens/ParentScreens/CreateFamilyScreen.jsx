@@ -154,9 +154,6 @@ const CreateFamilyScreen = ({ navigation }) => {
           bgColor2: guardian.bgColor2,
         });
 
-        const Tasks = collection(guardianRef, "tasks");
-        const taskCounterRef = doc(Tasks, "counter");
-        batch.set(taskCounterRef, { count: 0 });
       }
 
       await batch.commit();
@@ -167,6 +164,12 @@ const CreateFamilyScreen = ({ navigation }) => {
       Alert.alert("Error", "Could not create family. Please try again.");
     }
   };
+
+  const handleRemoveGuardian = (index) => {
+    const updatedGuardians = guardians.filter((_, i) => i !== index);
+    setGuardians(updatedGuardians);
+
+  }
 
   return (
     <View style={styles.container}>
@@ -265,6 +268,14 @@ const CreateFamilyScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   ))}
                 </View>
+                {index > 0 && (
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveGuardian(index)}
+                  >
+                    <Text style={styles.removeButtonText}>Remove Parent</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
             <TouchableOpacity
@@ -429,6 +440,19 @@ const styles = StyleSheet.create({
   LogText: {
     textAlign: "center",
     fontSize: 20,
+    fontFamily: "PoppinsSemiBold",
+  },
+  removeButton: {
+    backgroundColor: "#FFDFAC",
+    padding: 10,
+    borderRadius: 5,
+    margin: "auto",
+    marginVertical: 20,
+    width: "50%",
+  },
+  removeButtonText: {
+    textAlign: "center",
+    fontSize: 16,
     fontFamily: "PoppinsSemiBold",
   },
 });

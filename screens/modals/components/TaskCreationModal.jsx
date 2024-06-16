@@ -73,6 +73,7 @@ const TaskCreationModal = ({
   selectedProfile,
   allProfiles,
   profile,
+  fetchTasks
 }) => {
   const [toggleValue, setToggleValue] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
@@ -158,7 +159,7 @@ const TaskCreationModal = ({
           }),
         });
       }
-
+      fetchTasks();
       onAddTask(taskWithProfile);
       setNewTask({
         title: "",
@@ -250,8 +251,6 @@ const TaskCreationModal = ({
                     { label: "Cleaning", value: "cat1" },
                     { label: "Study", value: "cat2" },
                     { label: "Sport", value: "cat3" },
-                    { label: "Cooking", value: "cat4" },
-                    { label: "Shopping", value: "cat5" },
                     { label: "Other", value: "cat6" },
                   ]}
                 />

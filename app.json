@@ -1,17 +1,24 @@
 {
   "expo": {
-    "name": "Home_Harmony",
-    "slug": "homeharmony",
+    "name": "Taskobby",
+    "slug": "Taskobby",
+    "disctiption": "Taskobby is a task management app that helps you organize your tasks with your kids and get things done.",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/taskobby.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/7379c2e9-f891-4c84-8908-c093cd2f6d6a"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -26,13 +33,15 @@
     },
     "plugins": [
       "expo-font"
-      
     ],
     "extra": {
       "eas": {
         "projectId": "7379c2e9-f891-4c84-8908-c093cd2f6d6a"
       }
     },
-    "owner": "abdes9600"
+    "owner": "abdes9600",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }

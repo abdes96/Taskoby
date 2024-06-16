@@ -14,7 +14,7 @@ import {
 import { db, auth } from "../firebaseConfig";
 import { View, Modal, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import RewardCreationModal from "./KidsScreens/components/RewardCreationModal";
+import RewardCreationModal from "./modals/components/RewardCreationModal";
 import { Entypo } from "@expo/vector-icons";
 
 const Rewards = ({ route }) => {
@@ -29,7 +29,7 @@ const Rewards = ({ route }) => {
   const [firstVisit, setFirstVisit] = useState(true);
   const [allProfiles, setProfiles] = useState([]);
   const [childProfile, setProfile] = useState(profile);
-  const [coinBalance, setCoinBalance] = useState(childProfile.coins);
+  const [coinBalance, setCoinBalance] = useState(childProfile.coins || 0);
 
   const handleAddReward = () => {
     setModalReward(false);

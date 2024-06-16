@@ -1,5 +1,5 @@
 {
-  "name": "home_harmony",
+  "name": "taskoby",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -41,7 +41,8 @@
     "react-native-modern-datepicker": "^1.0.0-beta.91",
     "react-native-status-bar-height": "^2.6.0",
     "react-native-swiper": "^1.6.0",
-    "react-native-toggle-element": "^2.0.1"
+    "react-native-toggle-element": "^2.0.1",
+    "expo-updates": "~0.25.16"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

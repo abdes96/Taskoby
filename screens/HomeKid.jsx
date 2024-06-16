@@ -46,7 +46,7 @@ const Homekid = ({ route }) => {
         const tasksSnapshot = await getDocs(tasksRef);
         const tasksData = tasksSnapshot.docs.map((taskDoc) => taskDoc.data());
         profileData.tasks = tasksData;
-        profileData.numTasks = tasksData.length;
+        profileData.numTasks = tasksData.filter(task => task.status === "Done").length;
         profilesData.push({ id: doc.id, ...profileData });
       }
       const childProfiles = profilesData.filter(
@@ -105,8 +105,10 @@ const Homekid = ({ route }) => {
   };
 
   const renderFamilyMember = ({ item, index }) => {
+    const doneTasks = item.tasks.filter((task) => task.status === "Done");
+
     const { mostCommonCategory, maxCount, currentMonthCount } =
-      getMostCommonCategory(item.tasks);
+      getMostCommonCategory(doneTasks);
     console.log(
       `Most common category: ${mostCommonCategory}, Count: ${maxCount}, Current month count: ${currentMonthCount}`
     );
@@ -137,7 +139,9 @@ const Homekid = ({ route }) => {
           <View style={styles.detailsContainer}>
             <View style={styles.Record}>
               <Text>
-                <Text style={styles.recordtext}>{item.numTasks}</Text>
+                <Text style={styles.recordtext}>
+                  {item.numTasks ? item.numTasks : 0}
+                </Text>
               </Text>
             </View>
             <View>
@@ -203,7 +207,6 @@ const Homekid = ({ route }) => {
                 {renderFamilyMember({ item: profile, index })}
               </View>
             ))}
-            <Button title="Logout" onPress={handleLogout} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -249,6 +252,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     paddingHorizontal: 50,
+    backgroundColor: "#FFFFFF",
   },
   important: {
     padding: 20,

@@ -30,6 +30,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
+
 const TaskPopup = ({
   visible,
   onRequestClose,
@@ -92,8 +93,7 @@ const TaskPopup = ({
     React.useCallback(() => {
       setUpdatedTask({ ...task });
 
-      return () => {
-      };
+      return () => {};
     }, [task])
   );
   const addNote = async () => {
@@ -233,9 +233,7 @@ const TaskPopup = ({
           body: JSON.stringify({
             to: token,
             title: "Task Completed",
-            body: `${selectedProfile.firstName} has been rewarded with ${
-              taskData.reward
-            } coins for completing the task: ${taskData.title}! Great job! 🎉`,
+            body: `${selectedProfile.firstName} has been rewarded with ${taskData.reward} coins for completing the task: ${taskData.title}! Great job! 🎉`,
             data: { extraData: "Some extra data" },
           }),
         });
@@ -329,6 +327,8 @@ const TaskPopup = ({
                     : task && task.category === "Study"
                     ? require("../../../assets/study.png")
                     : task && task.image
+                    ? { uri: task.image }
+                    : require("../../../assets/paper.png")
                 }
                 style={styles.categoryImage}
               />
@@ -529,9 +529,9 @@ const styles = StyleSheet.create({
   },
   categoryImage: {
     resizeMode: "contain",
-    width: 250,
-    height: 200,
-    marginBottom: 10,
+    width: 200,
+    height: 150,
+    marginBottom: 30,
   },
   label: {
     fontSize: 16,

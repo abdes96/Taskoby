@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
-import Button from "../components/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alert } from "react-native";
 import {

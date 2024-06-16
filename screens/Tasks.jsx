@@ -11,7 +11,7 @@ import {
   ImageBackground,
   Modal,
 } from "react-native";
-import TaskCreationModal from "./KidsScreens/components/TaskCreationModal";
+import TaskCreationModal from "./modals/components/TaskCreationModal";
 import { getAuth } from "firebase/auth";
 import {
   getFirestore,
@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 
-import TaskPopup from "./KidsScreens/components/TaskPopup";
+import TaskPopup from "./modals/components/TaskPopup";
 
 const win = Dimensions.get("window");
 const ratio = win.width / 124;
@@ -128,8 +128,8 @@ const Tasks = ({ route }) => {
 
   if (loading) {
     return (
-      <View>
-        <Text>Loading...</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Image source={require("../assets/loading.png")} />
       </View>
     );
   }
@@ -148,6 +148,8 @@ const Tasks = ({ route }) => {
         selectedProfile={selectedProfile}
         allProfiles={profiles}
         profile={profile}
+        fetchTasks={fetchTasks}
+
       />
 
       <SafeAreaView>
@@ -274,12 +276,12 @@ const Tasks = ({ route }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.taskContainer}>
-            {selectedProfileTasks.length === 0 ||
+            {selectedProfileTasks.length === 0 || 
             selectedProfileTasks.every((task) => task.count === 0) ? (
               <Text style={styles.noTasksText}>No tasks available...</Text>
             ) : (
-              selectedProfileTasks
-                .filter((task) => {
+              (() => {
+                const filteredTasks = selectedProfileTasks.filter((task) => {
                   if (!task.dueDate) {
                     console.log("Task missing dueDate:", task.dueDate);
                     return false;
@@ -319,13 +321,17 @@ const Tasks = ({ route }) => {
                   }
 
                   if (selectedTab === "All") {
-                    return task.status === "To-do";
+                    return task.status === "To-do" || task.status === "Pending Review" || task.status === "Not Approved";
                   }
                   if (selectedTab === "Need Approval") {
-                    return task.status === "Pending Review";
+                    return task.status === "Pending Review" || task.status === "Not Approved";
                   }
                   return true;
-                })
+                });
+                if (filteredTasks.length === 0) {
+                  return <Text style={styles.noTasksText}>No tasks available...</Text>;
+                }
+                return filteredTasks
                 .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
                 .map((task, index) => {
                   const today = new Date();
@@ -399,13 +405,16 @@ const Tasks = ({ route }) => {
                             : task.category === "Study"
                             ? require("../assets/study.png")
                             : task.image
+                            ? { uri: task.image }
+                            : require("../assets/paper.png")
                         }
                         style={styles.taskImage}
                         resizeMode="contain"
                       />
                     </TouchableOpacity>
                   );
-                })
+                });
+            })()
             )}
           </View>
           <TaskPopup
