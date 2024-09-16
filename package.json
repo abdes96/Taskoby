@@ -30,6 +30,7 @@
     "expo-linear-gradient": "~13.0.2",
     "expo-notifications": "~0.28.7",
     "expo-status-bar": "~1.12.1",
+    "expo-updates": "~0.25.16",
     "express": "^4.19.2",
     "firebase": "^10.12.2",
     "firebase-tools": "^13.10.2",
@@ -39,10 +40,10 @@
     "react-native": "0.74.1",
     "react-native-circular-progress-indicator": "^4.4.2",
     "react-native-modern-datepicker": "^1.0.0-beta.91",
+    "react-native-snap-carousel": "^3.9.1",
     "react-native-status-bar-height": "^2.6.0",
     "react-native-swiper": "^1.6.0",
-    "react-native-toggle-element": "^2.0.1",
-    "expo-updates": "~0.25.16"
+    "react-native-toggle-element": "^2.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

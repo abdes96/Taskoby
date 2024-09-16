@@ -19,7 +19,7 @@ import {
   collection,
   deleteField,
 } from "firebase/firestore";
-import { auth, db } from "../../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 import {
   getStorage,
   ref,
