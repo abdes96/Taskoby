@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Taskobby",
-    "slug": "Taskobby",
-    "disctiption": "Taskobby is a task management app that helps you organize your tasks with your kids and get things done.",
+    "slug": "homeharmony",
+    "discription": "Taskobby is a task management app that helps you organize your tasks with your kids and get things done.",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/taskobby.png",

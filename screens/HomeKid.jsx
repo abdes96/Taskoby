@@ -7,12 +7,14 @@ import {
   StyleSheet,
   ScrollView,
   Button,
+  TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth";
+import Swiper from "react-native-swiper";
 
-const Homekid = ({ route }) => {
+const Homekid = ({ route, navigation }) => {
   const { profile } = route.params;
   const [profiles, setProfiles] = useState([]);
   const [childs, setChilds] = useState([]);
@@ -46,7 +48,9 @@ const Homekid = ({ route }) => {
         const tasksSnapshot = await getDocs(tasksRef);
         const tasksData = tasksSnapshot.docs.map((taskDoc) => taskDoc.data());
         profileData.tasks = tasksData;
-        profileData.numTasks = tasksData.filter(task => task.status === "Done").length;
+        profileData.numTasks = tasksData.filter(
+          (task) => task.status === "Done"
+        ).length;
         profilesData.push({ id: doc.id, ...profileData });
       }
       const childProfiles = profilesData.filter(
@@ -94,14 +98,6 @@ const Homekid = ({ route }) => {
     }
 
     return { mostCommonCategory, maxCount, currentMonthCount };
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error logging out: ", error);
-    }
   };
 
   const renderFamilyMember = ({ item, index }) => {
@@ -196,7 +192,65 @@ const Homekid = ({ route }) => {
                   <Text style={styles.profileName}>{member.firstName}</Text>
                 </View>
               ))}
+              {profile.role === "parent" && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => navigation.navigate("AddKidsScreen")}
+                >
+                  <View style={styles.profileContainer}>
+                    <View
+                      style={[
+                        styles.circleBackground2,
+                        { backgroundColor: "#FFD700" },
+                      ]}
+                    >
+                      <Image
+                        source={require("../assets/add.png")}
+                        style={styles.AddImage}
+                      />
+                    </View>
+                    <Text style={styles.profileName}></Text>
+                  </View>
+                </TouchableOpacity>
+              )}
             </ScrollView>
+            <Swiper
+              style={styles.wrapper}
+              autoplay={true}
+              dot={
+                <View
+                  style={{
+                    backgroundColor: "#EDE8FF",
+                    width: 10,
+                    height: 10,
+                    borderRadius: 20,
+                    margin: 3,
+                  }}
+                />
+              }
+              activeDot={
+                <View
+                  style={{
+                    backgroundColor: "#BEACFF",
+                    width: 10,
+                    height: 10,
+                    borderRadius: 20,
+                    margin: 3,
+                  }}
+                />
+              }
+              showsButtons = {false}
+            >
+              <View style={styles.slide1}>
+                <Text style={styles.text}>Hello Swiper</Text>
+              </View>
+              <View style={styles.slide2}>
+                <Text style={styles.text}>Beautiful</Text>
+              </View>
+              <View style={styles.slide3}>
+                <Text style={styles.text}>And simple</Text>
+              </View>
+            </Swiper>
           </View>
           <View style={styles.classement}>
             <Text style={styles.sectionTitle}>
@@ -215,6 +269,46 @@ const Homekid = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    height: 220,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  slide1: {
+    margin: "auto",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 125,
+    width: 300,
+    borderRadius: 15,
+    backgroundColor: "#EDE8FF",
+  },
+  slide2: {
+    margin: "auto",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 125,
+    width: 300,
+    backgroundColor: "#EDE8FF",
+    borderRadius: 15,
+  },
+  slide3: {
+    margin: "auto",
+    justifyContent: "center",
+    height: 125,
+    width: 300,
+    borderRadius: 15,
+
+    alignItems: "center",
+    backgroundColor: "#EDE8FF",
+  },
+  text: {
+    color: "#fff",
+    fontSize: 30,
+    fontWeight: "bold",
+  },
+
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -252,7 +346,8 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     paddingHorizontal: 50,
-    backgroundColor: "#FFFFFF",
+    display: "flex",
+    alignItems: "center",
   },
   important: {
     padding: 20,
@@ -273,6 +368,10 @@ const styles = StyleSheet.create({
     width: 70,
     height: 75,
   },
+  AddImage: {
+    width: 30,
+    height: 30,
+  },
   circleBackground: {
     width: 85,
     height: 85,
@@ -288,6 +387,22 @@ const styles = StyleSheet.create({
     shadowRadius: 100,
     elevation: 5,
   },
+  circleBackground2: {
+    width: 50,
+    height: 50,
+    borderRadius: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#030002",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
+  },
+
   profileName: {
     marginTop: 5,
     fontSize: 18,
