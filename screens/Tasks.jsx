@@ -11,7 +11,7 @@ import {
   ImageBackground,
   Modal,
 } from "react-native";
-import TaskCreationModal from "./modals/components/TaskCreationModal";
+import TaskCreationModal from "./components/TaskCreationModal";
 import { getAuth } from "firebase/auth";
 import {
   getFirestore,
@@ -23,13 +23,14 @@ import {
 } from "firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 
-import TaskPopup from "./modals/components/TaskPopup";
+import TaskPopup from "./components/TaskPopup";
 
 const win = Dimensions.get("window");
 const ratio = win.width / 124;
 
 const Tasks = ({ route }) => {
   const { profile } = route.params;
+
   const [profiles, setProfiles] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
@@ -117,7 +118,7 @@ const Tasks = ({ route }) => {
       setSelectedProfileTasks(tasksData);
       setLoading(false);
     }
-    console.log("fetching tasks", selectedProfileTasks);
+    //console.log("fetching tasks", selectedProfileTasks);
   };
 
   useFocusEffect(
@@ -149,7 +150,6 @@ const Tasks = ({ route }) => {
         allProfiles={profiles}
         profile={profile}
         fetchTasks={fetchTasks}
-
       />
 
       <SafeAreaView>
@@ -276,7 +276,7 @@ const Tasks = ({ route }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.taskContainer}>
-            {selectedProfileTasks.length === 0 || 
+            {selectedProfileTasks.length === 0 ||
             selectedProfileTasks.every((task) => task.count === 0) ? (
               <Text style={styles.noTasksText}>No tasks available...</Text>
             ) : (
@@ -321,100 +321,124 @@ const Tasks = ({ route }) => {
                   }
 
                   if (selectedTab === "All") {
-                    return task.status === "To-do" || task.status === "Pending Review" || task.status === "Not Approved";
+                    return (
+                      task.status === "To-do" ||
+                      task.status === "Pending Review" ||
+                      task.status === "Not Approved"
+                    );
                   }
                   if (selectedTab === "Need Approval") {
-                    return task.status === "Pending Review" || task.status === "Not Approved";
+                    return (
+                      task.status === "Pending Review" ||
+                      task.status === "Not Approved"
+                    );
                   }
                   return true;
                 });
                 if (filteredTasks.length === 0) {
-                  return <Text style={styles.noTasksText}>No tasks available...</Text>;
+                  return (
+                    <Text style={styles.noTasksText}>
+                      No tasks available...
+                    </Text>
+                  );
                 }
                 return filteredTasks
-                .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
-                .map((task, index) => {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const yesterday = new Date(today);
-                  yesterday.setDate(yesterday.getDate() - 1);
-                  const isPastDue = task.dueDate.toDate() < yesterday;
-                  return (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        ...styles.taskCard,
-                        backgroundColor:
-                          task.status === "Done"
-                            ? "#E0F9E6"
-                            : isPastDue && task.status === "To-do"
-                            ? "#ffcccb"
-                            : "#EAF6FF",
-                      }}
-                      onPress={() => {
-                        // if (profile.role === "child") {
-                        handleTaskClick(task);
-                      }}
-                    >
-                      <View style={styles.textTask}>
-                        <Text style={styles.taskCategory}>{task.category}</Text>
-                        <Text style={styles.taskTitle}>{task.title}</Text>
-                        {task.time && (
-                          <View
-                            style={{
-                              flexDirection: "row",
-                              alignItems: "center",
-                              textAlign: "baseline",
-                            }}
-                          >
-                            <Image
-                              source={require("../assets/sand.png")}
-                              style={{
-                                resizeMode: "contain",
-                                width: 30,
-                                height: 30,
-                                marginRight: 10,
-                              }}
-                            />
-                            <Text style={styles.taskTime}>{task.time}</Text>
-                          </View>
-                        )}
-                        <Text
+                  .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
+                  .map((task, index) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const isPastDue = task.dueDate.toDate() < yesterday;
+                    return (
+                      <View style={styles.taskContent}>
+                        <TouchableOpacity
+                          key={index}
                           style={{
-                            ...styles.taskStatus,
-                            color:
-                              task.status === "Done" ? "#00B72E" : "#0074D1",
+                            ...styles.taskCard,
+                            backgroundColor:
+                              task.status === "Done"
+                                ? "#E0F9E6"
+                                : isPastDue && task.status === "To-do"
+                                  ? "#ffcccb"
+                                  : task.status === "Pending Review"
+                                    ? "#FFE3AD"
+                                    : "#EAF2FB",
+                          }}
+                          onPress={() => {
+                            handleTaskClick(task);
                           }}
                         >
-                          {task.status}
-                        </Text>
-                      </View>
-                      {task.status === "Done" && (
-                        <Image
-                          source={require("../assets/done.png")}
-                          style={styles.doneImage}
-                        />
-                      )}
+                          <View style={styles.left}>
+                            <View
+                              style={
+                                task.status === "Done"
+                                  ? styles.lineDone
+                                  : task.status === "Pending Review"
+                                    ? styles.linePendingReview
+                                    : styles.line
+                              }
+                            ></View>
+                            <View style={styles.textTask}>
+                              <Text style={styles.taskCategory}>
+                                {task.category}
+                              </Text>
+                              <Text
+                                style={styles.taskTitle}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {task.title}
+                              </Text>
+                              {task.time && (
+                                <View
+                                  style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    textAlign: "baseline",
+                                  }}
+                                >
+                                  <Image
+                                    source={require("../assets/sand.png")}
+                                    style={{
+                                      resizeMode: "contain",
+                                      width: 30,
+                                      height: 30,
+                                      marginRight: 10,
+                                    }}
+                                  />
+                                  <Text style={styles.taskTime}>
+                                    {task.time}
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+                          <Text
+                            style={{
+                              ...styles.taskStatus,
+                              color:
+                                task.status === "Done"
+                                  ? "#00B72E"
+                                  : task.status === "Pending Review"
+                                    ? "#D7761C"
+                                    : "#0074D1",
+                            }}
+                          >
+                            {task.status}
+                          </Text>
 
-                      <ImageBackground
-                        source={
-                          task.category === "Cleaning"
-                            ? require("../assets/clean.png")
-                            : task.category === "Sport"
-                            ? require("../assets/sport.png")
-                            : task.category === "Study"
-                            ? require("../assets/study.png")
-                            : task.image
-                            ? { uri: task.image }
-                            : require("../assets/paper.png")
-                        }
-                        style={styles.taskImage}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                  );
-                });
-            })()
+                          {task.status === "Done" && (
+                            <Image
+                              source={require("../assets/done.png")}
+                              style={styles.doneImage}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  });
+              })()
             )}
           </View>
           <TaskPopup
@@ -744,16 +768,22 @@ const styles = StyleSheet.create({
     marginVertical: 50,
   },
   taskCard: {
-    backgroundColor: "#EAF6FF",
-    borderRadius: 10,
+    backgroundColor: "#EAF2FB",
+    borderRadius: 15,
     marginVertical: 15,
-    justifyContent: "space-between",
+    justifyContent: "center",
     flexDirection: "row",
     width: "100%",
-    height: "auto",
-    paddingVertical: 5,
+    height: 130,
     borderWidth: 1,
-    borderColor: "black",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
   },
   taskCategory: {
     fontSize: 18,
@@ -761,41 +791,71 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins",
   },
   textTask: {
+    display: "flex",
     flexDirection: "column",
-    justifyContent: "space-around",
-    paddingLeft: 20,
+    justifyContent: "flex-start",
+    padding: 15,
+    paddingLeft: 0,
+    marginRight: 10,
+    width: "80%",
+  },
+  left: {
+    flexDirection: "row",
+    height: "auto",
+  },
+  line: {
+    width: 10,
+    borderRadius: 20,
+    margin: 15,
+    backgroundColor: "#1978DA",
+    height: "60%",
+  },
+  lineDone: {
+    width: 10,
+    borderRadius: 20,
+    margin: 15,
+    backgroundColor: "#00B72E",
+    height: "60%",
+  },
+  linePendingReview: {
+    width: 10,
+    borderRadius: 20,
+    margin: 15,
+    backgroundColor: "#D7761C",
+    height: "60%",
   },
 
   taskTitle: {
     fontSize: 28,
     color: "#000000",
-    fontFamily: "PoppinsSemiBold",
-    width: 200,
+    fontFamily: "PoppinsMedium",
+    width: "400",
     zIndex: 999,
   },
   taskStatus: {
     fontSize: 18,
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsSemiBold",
+    textAlign: "right",
+    right: 15,
+    bottom: 5,
+    position: "absolute",
+    alignItems: "baseline",
   },
   taskTime: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#000000",
-    fontFamily: "Poppins",
+    fontFamily: "PoppinsSemiBold",
   },
   doneImage: {
     position: "absolute",
+    resizeMode: "contain",
     zIndex: 999,
     height: 80,
     width: 80,
     right: -20,
-    top: 30,
+    top: -5,
   },
-  taskImage: {
-    height: 150,
-    width: 200,
-    right: 40,
-    top: 0,
-  },
+
   tabNavigator: {
     flexDirection: "row",
     justifyContent: "space-around",

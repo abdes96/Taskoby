@@ -10,16 +10,16 @@ import {
   ScrollView,
 } from "react-native";
 import ToggleButton from "react-native-toggle-element";
-import { db } from "../../../firebaseConfig";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
+import { collection, addDoc, getDocs, serverTimestamp  } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import DatePicker from "react-native-modern-datepicker";
 import * as Notifications from "expo-notifications";
 
 const images = {
-  dropdownIcon: require("../../../assets/dropdown.png"),
-  sand: require("../../../assets/sand.png"),
-  camera: require("../../../assets/camera.png"),
+  dropdownIcon: require("../../assets/dropdown.png"),
+  sand: require("../../assets/sand.png"),
+  camera: require("../../assets/camera.png"),
 };
 
 const CustomDropdown = ({ value, setValue, options, placeholder }) => {
@@ -91,6 +91,8 @@ const TaskCreationModal = ({
     specificRole: null,
     status: "To-do",
     reward: 0,
+    createdAt: serverTimestamp(),
+
   });
 
   const handleAddTask = async () => {
@@ -112,9 +114,12 @@ const TaskCreationModal = ({
 
     const taskWithProfile = { ...newTask , specificRole: profile.specificRole};
 
+    
+
     try {
       const auth = getAuth();
       const user = auth.currentUser;
+      let taskAddedToAllTasks = false;
 
       if (newTask.taskForEveryone) {
         for (let profilechild of allProfiles) {
@@ -123,7 +128,16 @@ const TaskCreationModal = ({
             db,
             `users/${user.uid}/profiles/${profilechild.id}/tasks`
           );
-        await addDoc(tasksRef, { ...taskWithProfile, specificRole: specificRole });
+          const alltasksRef = collection(
+            db,
+            `users/${user.uid}/tasks`
+          );
+            addDoc(tasksRef, { ...taskWithProfile, specificRole: profile.specificRole });
+
+            if (!taskAddedToAllTasks) {
+              await addDoc(alltasksRef, { ...taskWithProfile, specificRole });
+              taskAddedToAllTasks = true;
+            }                
         }
 
         console.log("Task added successfully to all profiles!");
@@ -132,8 +146,15 @@ const TaskCreationModal = ({
           db,
           `users/${user.uid}/profiles/${selectedProfile.id}/tasks`
         );
-        await addDoc(tasksRef, { ...taskWithProfile, specificRole: profile.specificRole });
-
+        const alltasksRef = collection(
+          db,
+          `users/${user.uid}/tasks` 
+        );
+        
+        await Promise.all([
+          addDoc(tasksRef, { ...taskWithProfile, specificRole: profile.specificRole }),
+          addDoc(alltasksRef, { ...taskWithProfile, specificRole: profile.specificRole })
+        ]);
         console.log("Task added successfully!");
       }
 
@@ -171,7 +192,8 @@ const TaskCreationModal = ({
         taskForEveryone: false,
         profile: null,
         specificRole: null, 
-        status: "Pending Review",
+        status: "To-do",
+        createdAt: serverTimestamp(),
       });
       console.log("Task added successfully!" + taskWithProfile);
       onClose();
@@ -215,9 +237,7 @@ const TaskCreationModal = ({
         <ScrollView>
           <View style={styles.modalView}>
             <View style={styles.topmodal}>
-              <TouchableOpacity >
                 <Text style={styles.buttonText}>Add Task</Text>
-              </TouchableOpacity>
               <TouchableOpacity onPress={onClose}>
                 <Text style={styles.Cancel}>Cancel</Text>
               </TouchableOpacity>
@@ -616,6 +636,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
+    
   },
   modalView: {
     backgroundColor: "#FFFFFF",
@@ -624,6 +645,8 @@ const styles = {
     padding: 20,
     alignItems: "center",
     marginTop: 22,
+    
+    
   },
   modalText: {
     width: "100%",

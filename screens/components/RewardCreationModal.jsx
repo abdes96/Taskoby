@@ -9,7 +9,7 @@ import {
   FlatList,
   ScrollView,
 } from "react-native";
-import { db } from "../../../firebaseConfig";
+import { db } from "../../firebaseConfig";
 import {
   collection,
   addDoc,
@@ -22,9 +22,9 @@ import { getAuth } from "firebase/auth";
 import { useFocusEffect } from "@react-navigation/native";
 
 const images = {
-  dropdownIcon: require("../../../assets/dropdown.png"),
-  sand: require("../../../assets/sand.png"),
-  camera: require("../../../assets/camera.png"),
+  dropdownIcon: require("../../assets/dropdown.png"),
+  sand: require("../../assets/sand.png"),
+  camera: require("../../assets/camera.png"),
 };
 
 const RewardCreationModal = ({ isVisible, onClose, profile, fetchRewards }) => {

@@ -12,10 +12,11 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, doc, collection, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import Swiper from "react-native-swiper";
+import CarouselTasks from "./components/CarouselHome";
 
-const Homekid = ({ route, navigation }) => {
-  const { profile } = route.params;
+const Homekid = ({ route, navigation  }) => {
+  const { profile , allprofiles } = route.params;
+  
   const [profiles, setProfiles] = useState([]);
   const [childs, setChilds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -105,9 +106,9 @@ const Homekid = ({ route, navigation }) => {
 
     const { mostCommonCategory, maxCount, currentMonthCount } =
       getMostCommonCategory(doneTasks);
-    console.log(
-      `Most common category: ${mostCommonCategory}, Count: ${maxCount}, Current month count: ${currentMonthCount}`
-    );
+    // console.log(
+    //   `Most common category: ${mostCommonCategory}, Count: ${maxCount}, Current month count: ${currentMonthCount}`
+    // );
 
     return (
       <View style={styles.member}>
@@ -214,43 +215,14 @@ const Homekid = ({ route, navigation }) => {
                 </TouchableOpacity>
               )}
             </ScrollView>
-            <Swiper
-              style={styles.wrapper}
-              autoplay={true}
-              dot={
-                <View
-                  style={{
-                    backgroundColor: "#EDE8FF",
-                    width: 10,
-                    height: 10,
-                    borderRadius: 20,
-                    margin: 3,
-                  }}
-                />
-              }
-              activeDot={
-                <View
-                  style={{
-                    backgroundColor: "#BEACFF",
-                    width: 10,
-                    height: 10,
-                    borderRadius: 20,
-                    margin: 3,
-                  }}
-                />
-              }
-              showsButtons = {false}
-            >
-              <View style={styles.slide1}>
-                <Text style={styles.text}>Hello Swiper</Text>
-              </View>
-              <View style={styles.slide2}>
-                <Text style={styles.text}>Beautiful</Text>
-              </View>
-              <View style={styles.slide3}>
-                <Text style={styles.text}>And simple</Text>
-              </View>
-            </Swiper>
+            <View>
+              <Text style={styles.H1}>Rewards </Text>
+            </View>
+            <CarouselTasks profile={profile} reward={true} allprofiles={allprofiles} />
+            <Text style={styles.H1}>Tasks </Text>
+
+            <CarouselTasks profile={profile} reward={false} allprofiles={allprofiles} />
+
           </View>
           <View style={styles.classement}>
             <Text style={styles.sectionTitle}>
@@ -407,6 +379,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 18,
     fontFamily: "PoppinsBold",
+  },
+  H1: {
+    fontSize: 20,
+    fontFamily: "PoppinsBold",
+    textAlign: "left",
+    margin: 20,
   },
   sectionTitle: {
     fontSize: 25,

@@ -14,7 +14,7 @@ import {
 import { db, auth } from "../firebaseConfig";
 import { View, Modal, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import RewardCreationModal from "./modals/components/RewardCreationModal";
+import RewardCreationModal from "./components/RewardCreationModal";
 import { Entypo } from "@expo/vector-icons";
 
 const Rewards = ({ route }) => {
@@ -88,23 +88,7 @@ const Rewards = ({ route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      const fetchRewards = async () => {
-        const rewardsCollection = collection(
-          db,
-          `users/${user.uid}/profiles/${profile.id}/rewards`
-        );
-        const rewardSnapshot = await getDocs(rewardsCollection);
-        const rewardsList = rewardSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setRewards(rewardsList);
-        const categories = [
-          "All",
-          ...new Set(rewardsList.map((reward) => reward.category)),
-        ];
-        setCategories(categories);
-      };
+      
 
       fetchRewards();
     }, [])

@@ -12,7 +12,8 @@ import Homekid from "./HomeKid";
 const Tab = createBottomTabNavigator();
 
 function KidsTabNavigator({ route }) {
-  const { profile } = route.params;
+  const { profile , allprofiles } = route.params;
+  
 
   return (
     <Tab.Navigator
@@ -33,7 +34,7 @@ function KidsTabNavigator({ route }) {
       <Tab.Screen
         name="Homekid"
         component={Homekid}
-        initialParams={{ profile }}
+        initialParams={{ profile , allprofiles }}
         options={{
           tabBarIcon: ({ color, focused, size }) => {
             return (

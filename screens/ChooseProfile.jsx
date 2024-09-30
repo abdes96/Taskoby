@@ -12,12 +12,12 @@ import {
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 
-const UserProfile = ({ name, imageSource, color, navigation, profile }) => {
+const UserProfile = ({ name, imageSource, color, navigation, profile , allprofiles }) => {
   return (
     <TouchableOpacity
       style={styles.profileContainer}
       onPress={() => {
-        navigation.navigate("KidsTabNavigator", { profile });
+        navigation.navigate("KidsTabNavigator", { profile , allprofiles });
       }}
     >
       <View style={[styles.circleBackground, { backgroundColor: color }]}>
@@ -118,6 +118,7 @@ useFocusEffect(
                     name={profile.firstName}
                     imageSource={{ uri: profile.avatarUrl }}
                     color={profile.bgColor}
+                    allprofiles={profiles}
                   />
                 );
               })}

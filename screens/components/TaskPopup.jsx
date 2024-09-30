@@ -318,7 +318,7 @@ const TaskPopup = ({
               </TouchableOpacity>
               <Text style={styles.taskTitle}>{updatedTask.title}</Text>
               <Text style={styles.taskCategory}>{updatedTask.category}</Text>
-              <Image
+              {/* <Image
                 source={
                   task && task.category === "Cleaning"
                     ? require("../../../assets/clean.png")
@@ -331,7 +331,7 @@ const TaskPopup = ({
                     : require("../../../assets/paper.png")
                 }
                 style={styles.categoryImage}
-              />
+              /> */}
               <Text
                 style={{
                   ...styles.statusText,
